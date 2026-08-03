@@ -73,7 +73,13 @@
             border: 4px solid #334155;
             position: relative;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            transition: transform 0.2s ease-out;
+            transition: transform 0.1s ease-out, border-color 0.3s ease;
+        }
+
+        /* Kıbleye Hizalanınca Pusula Çerçevesi Parlasın */
+        .compass-circle.aligned {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
         }
 
         /* Yön Harfleri */
@@ -99,7 +105,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: transform 0.2s ease-out;
+            transition: transform 0.1s ease-out;
         }
 
         .pointer-arrow {
@@ -196,8 +202,8 @@
         <div class="center-dot"></div>
     </div>
 
-    <!-- İzin Butonu (iOS için gerekli) -->
-    <button class="btn-permission" id="perm-btn" onclick="requestCompassPermission()">Pusulayı Etkinleştir</button>
+    <!-- İzin ve Başlatma Butonu -->
+    <button class="btn-permission" id="perm-btn" onclick="requestCompassPermission()">Pusulayı ve Sesi Etkinleştir</button>
 
     <!-- Derece ve Detay Kartı -->
     <div class="info-card">
@@ -206,14 +212,41 @@
     </div>
 
     <div class="footer">
-        <p>Ayetin Vakti • Hassas Konum Desteği</p>
+        <p>Ayetin Vakti • Titreşim & Ses Destekli</p>
     </div>
 </div>
 
 <script>
     let qiblaBearing = 0;
+    let isAligned = false; // Kıbleye hizalandı mı?
+    let audioCtx = null;
+
     const meccaLat = 21.4225;
     const meccaLng = 39.8262;
+
+    // Web Audio API ile Dosyasız Bip Sesi Üretici
+    function playBeep() {
+        try {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime); // 880 Hz tatlı ton
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        } catch (e) {
+            console.log("Ses çalınamadı:", e);
+        }
+    }
 
     // Konum Bilgisi Al
     function initLocation() {
@@ -238,7 +271,7 @@
         }
     }
 
-    // Kıble Açısını Hesapla (Spherical Trigonometry)
+    // Kıble Açısını Hesapla
     function calculateQiblaAngle(lat, lng) {
         const phiK = meccaLat * Math.PI / 180;
         const lambdaK = meccaLng * Math.PI / 180;
@@ -256,16 +289,19 @@
     // Pusula Sensörünü Başlat
     function setupCompass() {
         if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-            // iOS Cihazlar İçin İzin Butonunu Göster
             document.getElementById('perm-btn').style.display = 'block';
         } else {
-            // Android veya Destekleyen Diğer Cihazlar
             window.addEventListener('deviceorientationabsolute', handleOrientation, true);
             window.addEventListener('deviceorientation', handleOrientation, true);
         }
     }
 
     function requestCompassPermission() {
+        // Kullanıcı etkileşimi ile ses motorunu uyandır
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
         DeviceOrientationEvent.requestPermission()
             .then(response => {
                 if (response === 'granted') {
@@ -278,28 +314,53 @@
             .catch(console.error);
     }
 
-    // Cihaz Döndükçe Pusulayı ve İbreyi Güncelle
+    // Cihaz Döndükçe Pusulayı Kontrol Et
     function handleOrientation(event) {
         let heading = event.alpha;
 
         if (event.webkitCompassHeading) {
-            // iOS için gerçek Kuzey başlığı
             heading = event.webkitCompassHeading;
         } else if (event.absolute && event.alpha !== null) {
             heading = 360 - event.alpha;
         }
 
         if (heading !== undefined && heading !== null) {
-            // Pusula dairesini cihazın döndüğü yönün tersine döndür
             document.getElementById('compass').style.transform = `rotate(${-heading}deg)`;
             
-            // Kıble ibresini Mekke açısına göre döndür
             const qiblaRotation = qiblaBearing - heading;
             document.getElementById('qibla-pointer').style.transform = `rotate(${qiblaRotation}deg)`;
+
+            // --- KIBLEYE HİZALANMA KONTROLÜ ---
+            // Derece farkı ±4 dereceye girdi mi?
+            let diff = Math.abs((heading - qiblaBearing + 360) % 360);
+            if (diff > 180) diff = 360 - diff;
+
+            const compassElem = document.getElementById('compass');
+
+            if (diff <= 4) {
+                if (!isAligned) {
+                    isAligned = true;
+                    compassElem.classList.add('aligned');
+                    document.getElementById('status-text').innerText = "✨ Kıble Yönündesiniz ✨";
+
+                    // Titreşim Ver (Destekleyen Cihazlarda)
+                    if (navigator.vibrate) {
+                        navigator.vibrate([150, 50, 150]); // İki kısa titreşim
+                    }
+
+                    // Onay Sesi Çal
+                    playBeep();
+                }
+            } else {
+                if (isAligned) {
+                    isAligned = false;
+                    compassElem.classList.remove('aligned');
+                    document.getElementById('status-text').innerText = "Cihazınızı düz tutun";
+                }
+            }
         }
     }
 
-    // Başlat
     window.onload = initLocation;
 </script>
 
