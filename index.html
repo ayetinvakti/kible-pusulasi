@@ -1,33 +1,57 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <!-- Tema Sıçramasını Önleyici Script -->
-    <script>
-        if (localStorage.getItem('theme') === 'light') {
-            document.documentElement.classList.add('light-mode');
-        }
-    </script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kıble Pusulası | Ayetin Vakti</title>
+    
     <!-- Sosyal Medya & Mesajlaşma Önizleme Etiketleri -->
     <meta property="og:title" content="Kıble Pusulası | Ayetin Vakti">
     <meta property="og:description" content="Hassas pusula, titreşim ve sesli onay desteğiyle Kıble yönünüzü kolayca bulun.">
     <meta property="og:type" content="website">
+
+    <!-- Tema Sıçramasını Önleyici Erken Betik -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
+
     <style>
+        /* Gece Teması (Varsayılan Koyu Mode) */
         :root {
             --bg-color: #0f172a;
             --card-bg: #1e293b;
             --accent-color: #10b981;
             --text-color: #f8fafc;
             --text-muted: #94a3b8;
+            --border-color: #334155;
+            --btn-bg: rgba(255, 255, 255, 0.08);
+            --btn-border: rgba(255, 255, 255, 0.2);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Gündüz Teması (Açık Mode) */
+        [data-theme="light"] {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --accent-color: #059669;
+            --text-color: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --btn-bg: rgba(0, 0, 0, 0.05);
+            --btn-border: rgba(0, 0, 0, 0.15);
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
 
         body {
@@ -38,7 +62,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: 16px;
         }
 
         .container {
@@ -49,9 +73,32 @@
             align-items: center;
         }
 
+        /* Header & Tema Butonu Alanı */
         .header {
+            width: 100%;
+            position: relative;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+            padding-top: 40px; /* Buton için üst alan bırakıldı */
+        }
+
+        /* Tema Değiştirme Butonu (Çakışmayı önlemek için akış içine alındı) */
+        .theme-toggle-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            color: var(--text-color);
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 10;
         }
 
         .header h1 {
@@ -70,7 +117,7 @@
             position: relative;
             width: 280px;
             height: 280px;
-            margin: 20px 0;
+            margin: 15px 0 25px 0;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -81,9 +128,9 @@
             height: 100%;
             border-radius: 50%;
             background-color: var(--card-bg);
-            border: 4px solid #334155;
+            border: 4px solid var(--border-color);
             position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            box-shadow: var(--shadow);
             transition: transform 0.1s ease-out, border-color 0.3s ease;
         }
 
@@ -148,12 +195,13 @@
         /* Bilgi Kartları */
         .info-card {
             background-color: var(--card-bg);
-            border: 1px solid #334155;
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 16px;
             width: 100%;
             text-align: center;
-            margin-top: 15px;
+            margin-top: 10px;
+            box-shadow: var(--shadow);
         }
 
         .info-title {
@@ -170,7 +218,7 @@
 
         .btn-permission {
             background-color: var(--accent-color);
-            color: #000;
+            color: #ffffff;
             border: none;
             padding: 12px 24px;
             border-radius: 10px;
@@ -188,78 +236,15 @@
             font-size: 0.85rem;
             color: var(--text-muted);
         }
-
-        /* --- Açık Tema (Light Mode) Stilleri --- */
-        body.light-mode {
-            background-color: #f8fafc !important;
-            color: #1a202c !important;
-        }
-
-        body.light-mode .header h1 {
-            color: #059669 !important;
-        }
-
-        body.light-mode .header p,
-        body.light-mode .info-title,
-        body.light-mode .footer {
-            color: #718096 !important;
-        }
-
-        body.light-mode .info-value {
-            color: #1a202c !important;
-        }
-
-        body.light-mode .info-card {
-            background-color: #ffffff !important;
-            border-color: #e2e8f0 !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
-        }
-
-        body.light-mode .compass-circle {
-            background-color: #ffffff !important;
-            border-color: #cbd5e1 !important;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
-        }
-
-        body.light-mode .center-dot {
-            border-color: #f8fafc !important;
-        }
-
-        /* Tema Değiştirme Butonu */
-        .theme-toggle-btn {
-            position: fixed !important;
-            top: 12px !important;
-            right: 12px !important;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #fff;
-            padding: 6px 12px !important;
-            border-radius: 20px !important;
-            cursor: pointer;
-            font-size: 0.85rem !important;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            z-index: 9999 !important;
-            transition: all 0.3s ease;
-        }
-
-        body.light-mode .theme-toggle-btn {
-            background: rgba(0, 0, 0, 0.06);
-            border-color: rgba(0, 0, 0, 0.15);
-            color: #2d3748 !important;
-        }
     </style>
 </head>
 <body>
 
-<button class="theme-toggle-btn" onclick="toggleTheme()">
-    <span id="theme-icon">🌙</span> <span id="theme-text">Gece</span>
-</button>
-
 <div class="container">
     <div class="header">
+        <button class="theme-toggle-btn" onclick="toggleTheme()">
+            <span id="theme-icon">🌙</span> <span id="theme-text">Gece</span>
+        </button>
         <h1>Kıble Pusulası</h1>
         <p id="status-text">Konum ve pusula izni bekleniyor...</p>
     </div>
@@ -295,31 +280,37 @@
 
 <script>
     let qiblaBearing = 0;
-    let isAligned = false; // Kıbleye hizalandı mı?
+    let isAligned = false; 
     let audioCtx = null;
 
     const meccaLat = 21.4225;
     const meccaLng = 39.8262;
 
-    // Tema Değiştirme Mantığı
-    function toggleTheme() {
-        const isLight = document.documentElement.classList.toggle('light-mode');
-        document.body.classList.toggle('light-mode', isLight);
-        
-        localStorage.setItem('theme', isLight ? 'light' : 'dark');
-        updateThemeUI(isLight);
+    // --- TEMA DEĞİŞTİRME MANTIGI ---
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        applyTheme(savedTheme);
     }
 
-    function updateThemeUI(isLight) {
+    function toggleTheme() {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        applyTheme(isLight ? 'dark' : 'light');
+    }
+
+    function applyTheme(theme) {
         const icon = document.getElementById('theme-icon');
         const text = document.getElementById('theme-text');
-        
-        if (isLight) {
+
+        if (theme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
             if (icon) icon.innerText = '☀️';
             if (text) text.innerText = 'Gündüz';
+            localStorage.setItem('theme', 'light');
         } else {
+            document.documentElement.removeAttribute('data-theme');
             if (icon) icon.innerText = '🌙';
             if (text) text.innerText = 'Gece';
+            localStorage.setItem('theme', 'dark');
         }
     }
 
@@ -335,7 +326,7 @@
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(880, audioCtx.currentTime); // 880 Hz tatlı ton
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
             gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
             osc.connect(gain);
@@ -396,7 +387,6 @@
     }
 
     function requestCompassPermission() {
-        // Kullanıcı etkileşimi ile ses motorunu uyandır
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
@@ -429,7 +419,7 @@
             const qiblaRotation = qiblaBearing - heading;
             document.getElementById('qibla-pointer').style.transform = `rotate(${qiblaRotation}deg)`;
 
-            // --- KIBLEYE HİZALANMA KONTROLÜ ---
+            // Kıbleye Hizalanma Kontrolü
             let diff = Math.abs((heading - qiblaBearing + 360) % 360);
             if (diff > 180) diff = 360 - diff;
 
@@ -458,18 +448,8 @@
     }
 
     window.onload = () => {
+        initTheme();
         initLocation();
-
-        // Tema Durumunu Başlangıçta Yükle
-        const isLight = localStorage.getItem('theme') === 'light';
-        if (isLight) {
-            document.documentElement.classList.add('light-mode');
-            document.body.classList.add('light-mode');
-        } else {
-            document.documentElement.classList.remove('light-mode');
-            document.body.classList.remove('light-mode');
-        }
-        updateThemeUI(isLight);
     };
 </script>
 
