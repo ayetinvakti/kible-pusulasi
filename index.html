@@ -193,7 +193,6 @@
             justify-content: center;
             align-items: center;
             transition: transform 0.1s ease-out;
-            transform: rotate(180deg); /* Konum kapalı/alınamamışken doğrudan Güney'i (G) gösterir */
         }
 
         .pointer-arrow {
@@ -211,9 +210,6 @@
             position: absolute;
             top: 5px;
             font-size: 1.5rem;
-            transform: translateX(-50%);
-            left: 50%;
-            z-index: 6;
         }
 
         .center-dot {
@@ -315,10 +311,9 @@
 </div>
 
 <script>
-    let qiblaBearing = 180; // Varsayılan güney açısı (Konum kapalıyken G'yi göstermesi için)
+    let qiblaBearing = 0;
     let isAligned = false; 
     let audioCtx = null;
-    let locationReceived = false;
 
     const meccaLat = 21.4225;
     const meccaLng = 39.8262;
@@ -381,7 +376,6 @@
                     const userLng = position.coords.longitude;
                     qiblaBearing = calculateQiblaAngle(userLat, userLng);
                     
-                    locationReceived = true;
                     document.getElementById('qibla-angle').innerText = Math.round(qiblaBearing) + '°';
                     document.getElementById('status-text').innerText = "Cihazınızı düz tutun";
 
@@ -389,12 +383,10 @@
                 },
                 (error) => {
                     document.getElementById('status-text').innerText = "Konum alınamadı. Lütfen konum izni verin.";
-                    setupCompass();
                 }
             );
         } else {
             document.getElementById('status-text').innerText = "Tarayıcınız konum özelliğini desteklemiyor.";
-            setupCompass();
         }
     }
 
@@ -455,9 +447,6 @@
             
             const qiblaRotation = qiblaBearing - heading;
             document.getElementById('qibla-pointer').style.transform = `rotate(${qiblaRotation}deg)`;
-
-            // Yalnızca konum alındıysa hizalama kontrolü yap
-            if (!locationReceived) return;
 
             // Kıbleye Hizalanma Kontrolü
             let diff = Math.abs((heading - qiblaBearing + 360) % 360);
