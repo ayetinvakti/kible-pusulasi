@@ -103,7 +103,7 @@
         }
 
         .home-btn:hover {
-            background-color: var(--btn-hover);
+            background-color: var(--btn-bg);
         }
 
         .theme-icon-btn {
@@ -121,7 +121,7 @@
         }
 
         .theme-icon-btn:hover {
-            background-color: var(--btn-hover);
+            background-color: var(--btn-bg);
         }
 
         .header {
@@ -177,19 +177,10 @@
             color: var(--text-muted);
         }
 
-        .direction.n { top: 10px; left: 50%; transform: translateX(-50%); color: #ef4444; }
+        .direction.n { top: 8px; left: 50%; transform: translateX(-50%); color: #ef4444; z-index: 2; }
         .direction.e { right: 15px; top: 50%; transform: translateY(-50%); }
         .direction.w { left: 15px; top: 50%; transform: translateY(-50%); }
-        
-        /* Güney Harfi: Çerçeve Kenarında Küçük ve Sade */
-        .direction.s { 
-            bottom: 8px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            font-size: 0.85rem; 
-            font-weight: 600;
-            opacity: 0.7;
-        }
+        .direction.s { bottom: 10px; left: 50%; transform: translateX(-50%); }
 
         /* Kıble İbresi */
         .qibla-pointer {
@@ -202,7 +193,6 @@
             justify-content: center;
             align-items: center;
             transition: transform 0.1s ease-out;
-            opacity: 0; /* Konum alınana kadar gizli */
         }
 
         .pointer-arrow {
@@ -210,19 +200,19 @@
             height: 0;
             border-left: 12px solid transparent;
             border-right: 12px solid transparent;
-            border-bottom: 95px solid var(--accent-color);
+            border-bottom: 92px solid var(--accent-color);
             position: absolute;
-            top: 22px;
+            top: 26px;
             filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.6));
         }
 
         .kaaba-icon {
             position: absolute;
-            top: 2px;
-            font-size: 1.4rem;
+            top: 10px;
+            font-size: 1.3rem;
             transform: translateX(-50%);
             left: 50%;
-            z-index: 5;
+            z-index: 6;
         }
 
         .center-dot {
@@ -391,7 +381,6 @@
                     qiblaBearing = calculateQiblaAngle(userLat, userLng);
                     
                     locationReceived = true;
-                    document.getElementById('qibla-pointer').style.opacity = '1'; // Konum gelince ibreyi göster
                     document.getElementById('qibla-angle').innerText = Math.round(qiblaBearing) + '°';
                     document.getElementById('status-text').innerText = "Cihazınızı düz tutun";
 
@@ -450,8 +439,6 @@
 
     // Cihaz Döndükçe Pusulayı Kontrol Et
     function handleOrientation(event) {
-        if (!locationReceived) return; // Konum gelmeden pusulayı döndürme
-
         let heading = event.alpha;
 
         if (event.webkitCompassHeading) {
@@ -463,8 +450,12 @@
         if (heading !== undefined && heading !== null) {
             document.getElementById('compass').style.transform = `rotate(${-heading}deg)`;
             
-            const qiblaRotation = qiblaBearing - heading;
+            // Konum gelmediyse ibreyi 0 derecede (varsayılan) tut, geldiyse gerçek kıble açısına çevir
+            const targetBearing = locationReceived ? qiblaBearing : 0;
+            const qiblaRotation = targetBearing - heading;
             document.getElementById('qibla-pointer').style.transform = `rotate(${qiblaRotation}deg)`;
+
+            if (!locationReceived) return;
 
             // Kıbleye Hizalanma Kontrolü
             let diff = Math.abs((heading - qiblaBearing + 360) % 360);
