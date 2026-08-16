@@ -169,7 +169,7 @@
             box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
         }
 
-        /* Yön Harfleri */
+        /* Yön Harfleri (Pusula kadranı ile birlikte döner) */
         .direction {
             position: absolute;
             font-weight: bold;
@@ -177,12 +177,12 @@
             color: var(--text-muted);
         }
 
-        .direction.n { top: 8px; left: 50%; transform: translateX(-50%); color: #ef4444; z-index: 2; }
+        .direction.n { top: 10px; left: 50%; transform: translateX(-50%); color: #ef4444; }
         .direction.e { right: 15px; top: 50%; transform: translateY(-50%); }
-        .direction.w { left: 15px; top: 50%; transform: translateY(-50%); }
         .direction.s { bottom: 10px; left: 50%; transform: translateX(-50%); }
+        .direction.w { left: 15px; top: 50%; transform: translateY(-50%); }
 
-        /* Kıble İbresi */
+        /* Kıble İbresi (Kuzeyi gösteren pusula kartına göre bağımsız veya sabit açıyla çalışır) */
         .qibla-pointer {
             position: absolute;
             width: 100%;
@@ -193,6 +193,7 @@
             justify-content: center;
             align-items: center;
             transition: transform 0.1s ease-out;
+            transform: rotate(180deg); /* Varsayılan olarak güneyi (aşağıyı) gösterir */
         }
 
         .pointer-arrow {
@@ -314,7 +315,7 @@
 </div>
 
 <script>
-    let qiblaBearing = 0;
+    let qiblaBearing = 180; // Varsayılan olarak güney (Türkiye ortalaması için mantıklı başlangıç)
     let isAligned = false; 
     let audioCtx = null;
     let locationReceived = false;
@@ -387,11 +388,13 @@
                     setupCompass();
                 },
                 (error) => {
-                    document.getElementById('status-text').innerText = "Konum alınamadı. Lütfen konum izni verin.";
+                    document.getElementById('status-text').innerText = "Konum alınamadı. Varsayılan yön gösteriliyor.";
+                    setupCompass();
                 }
             );
         } else {
             document.getElementById('status-text').innerText = "Tarayıcınız konum özelliğini desteklemiyor.";
+            setupCompass();
         }
     }
 
@@ -448,16 +451,14 @@
         }
 
         if (heading !== undefined && heading !== null) {
+            // Pusula kadranı cihazın yönüne göre ters döner (Kuzey hep kuzeyi gösterir)
             document.getElementById('compass').style.transform = `rotate(${-heading}deg)`;
             
-            // Konum gelmediyse ibreyi 0 derecede (varsayılan) tut, geldiyse gerçek kıble açısına çevir
-            const targetBearing = locationReceived ? qiblaBearing : 0;
-            const qiblaRotation = targetBearing - heading;
+            // Kıble ibresi: Cihazın yönü ile kıble açısı arasındaki farka göre döner
+            const qiblaRotation = qiblaBearing - heading;
             document.getElementById('qibla-pointer').style.transform = `rotate(${qiblaRotation}deg)`;
 
-            if (!locationReceived) return;
-
-            // Kıbleye Hizalanma Kontrolü
+            // Kıbleye Hizalanma Kontrolü (Yalnızca konum alındıysa veya geçerli açı varsa)
             let diff = Math.abs((heading - qiblaBearing + 360) % 360);
             if (diff > 180) diff = 360 - diff;
 
