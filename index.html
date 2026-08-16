@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -103,7 +103,7 @@
         }
 
         .home-btn:hover {
-            background-color: var(--btn-bg);
+            background-color: var(--btn-hover);
         }
 
         .theme-icon-btn {
@@ -121,7 +121,7 @@
         }
 
         .theme-icon-btn:hover {
-            background-color: var(--btn-bg);
+            background-color: var(--btn-hover);
         }
 
         .header {
@@ -169,7 +169,7 @@
             box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
         }
 
-        /* Yön Harfleri (Pusula kadranı ile birlikte döner) */
+        /* Yön Harfleri */
         .direction {
             position: absolute;
             font-weight: bold;
@@ -182,7 +182,7 @@
         .direction.s { bottom: 10px; left: 50%; transform: translateX(-50%); }
         .direction.w { left: 15px; top: 50%; transform: translateY(-50%); }
 
-        /* Kıble İbresi (Kuzeyi gösteren pusula kartına göre bağımsız veya sabit açıyla çalışır) */
+        /* Kıble İbresi */
         .qibla-pointer {
             position: absolute;
             width: 100%;
@@ -193,27 +193,23 @@
             justify-content: center;
             align-items: center;
             transition: transform 0.1s ease-out;
-            transform: rotate(180deg); /* Varsayılan olarak güneyi (aşağıyı) gösterir */
         }
 
         .pointer-arrow {
             width: 0;
             height: 0;
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-bottom: 92px solid var(--accent-color);
+            border-left: 14px solid transparent;
+            border-right: 14px solid transparent;
+            border-bottom: 90px solid var(--accent-color);
             position: absolute;
-            top: 26px;
+            top: 30px;
             filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.6));
         }
 
         .kaaba-icon {
             position: absolute;
-            top: 10px;
-            font-size: 1.3rem;
-            transform: translateX(-50%);
-            left: 50%;
-            z-index: 6;
+            top: 5px;
+            font-size: 1.5rem;
         }
 
         .center-dot {
@@ -315,10 +311,9 @@
 </div>
 
 <script>
-    let qiblaBearing = 180; // Varsayılan olarak güney (Türkiye ortalaması için mantıklı başlangıç)
+    let qiblaBearing = 0;
     let isAligned = false; 
     let audioCtx = null;
-    let locationReceived = false;
 
     const meccaLat = 21.4225;
     const meccaLng = 39.8262;
@@ -381,20 +376,17 @@
                     const userLng = position.coords.longitude;
                     qiblaBearing = calculateQiblaAngle(userLat, userLng);
                     
-                    locationReceived = true;
                     document.getElementById('qibla-angle').innerText = Math.round(qiblaBearing) + '°';
                     document.getElementById('status-text').innerText = "Cihazınızı düz tutun";
 
                     setupCompass();
                 },
                 (error) => {
-                    document.getElementById('status-text').innerText = "Konum alınamadı. Varsayılan yön gösteriliyor.";
-                    setupCompass();
+                    document.getElementById('status-text').innerText = "Konum alınamadı. Lütfen konum izni verin.";
                 }
             );
         } else {
             document.getElementById('status-text').innerText = "Tarayıcınız konum özelliğini desteklemiyor.";
-            setupCompass();
         }
     }
 
@@ -451,14 +443,12 @@
         }
 
         if (heading !== undefined && heading !== null) {
-            // Pusula kadranı cihazın yönüne göre ters döner (Kuzey hep kuzeyi gösterir)
             document.getElementById('compass').style.transform = `rotate(${-heading}deg)`;
             
-            // Kıble ibresi: Cihazın yönü ile kıble açısı arasındaki farka göre döner
             const qiblaRotation = qiblaBearing - heading;
             document.getElementById('qibla-pointer').style.transform = `rotate(${qiblaRotation}deg)`;
 
-            // Kıbleye Hizalanma Kontrolü (Yalnızca konum alındıysa veya geçerli açı varsa)
+            // Kıbleye Hizalanma Kontrolü
             let diff = Math.abs((heading - qiblaBearing + 360) % 360);
             if (diff > 180) diff = 360 - diff;
 
