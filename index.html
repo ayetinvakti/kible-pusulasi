@@ -179,8 +179,17 @@
 
         .direction.n { top: 10px; left: 50%; transform: translateX(-50%); color: #ef4444; }
         .direction.e { right: 15px; top: 50%; transform: translateY(-50%); }
-        .direction.s { bottom: 10px; left: 50%; transform: translateX(-50%); }
         .direction.w { left: 15px; top: 50%; transform: translateY(-50%); }
+        
+        /* Güney Harfi: Çerçeve Kenarında Küçük ve Sade */
+        .direction.s { 
+            bottom: 8px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            font-size: 0.85rem; 
+            font-weight: 600;
+            opacity: 0.7;
+        }
 
         /* Kıble İbresi */
         .qibla-pointer {
@@ -193,23 +202,27 @@
             justify-content: center;
             align-items: center;
             transition: transform 0.1s ease-out;
+            opacity: 0; /* Konum alınana kadar gizli */
         }
 
         .pointer-arrow {
             width: 0;
             height: 0;
-            border-left: 14px solid transparent;
-            border-right: 14px solid transparent;
-            border-bottom: 90px solid var(--accent-color);
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 95px solid var(--accent-color);
             position: absolute;
-            top: 30px;
+            top: 22px;
             filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.6));
         }
 
         .kaaba-icon {
             position: absolute;
-            top: 5px;
-            font-size: 1.5rem;
+            top: 2px;
+            font-size: 1.4rem;
+            transform: translateX(-50%);
+            left: 50%;
+            z-index: 5;
         }
 
         .center-dot {
@@ -314,6 +327,7 @@
     let qiblaBearing = 0;
     let isAligned = false; 
     let audioCtx = null;
+    let locationReceived = false;
 
     const meccaLat = 21.4225;
     const meccaLng = 39.8262;
@@ -376,6 +390,8 @@
                     const userLng = position.coords.longitude;
                     qiblaBearing = calculateQiblaAngle(userLat, userLng);
                     
+                    locationReceived = true;
+                    document.getElementById('qibla-pointer').style.opacity = '1'; // Konum gelince ibreyi göster
                     document.getElementById('qibla-angle').innerText = Math.round(qiblaBearing) + '°';
                     document.getElementById('status-text').innerText = "Cihazınızı düz tutun";
 
@@ -434,6 +450,8 @@
 
     // Cihaz Döndükçe Pusulayı Kontrol Et
     function handleOrientation(event) {
+        if (!locationReceived) return; // Konum gelmeden pusulayı döndürme
+
         let heading = event.alpha;
 
         if (event.webkitCompassHeading) {
