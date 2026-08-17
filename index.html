@@ -1,24 +1,47 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <script>
+        // Tema ve Özel Renk Paleti Kontrolü (Sayfa yüklenmeden önce çalışır, titremeyi önler)
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (savedTheme === 'light' || (!savedTheme && !systemPrefersDark)) {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+
+        // Ayarlardan kaydedilen özel renkleri hemen uygula
+        const savedAccent = localStorage.getItem('custom_accent');
+        const savedBg = localStorage.getItem('custom_bg');
+        const savedText = localStorage.getItem('custom_text');
+
+        if (savedAccent) document.documentElement.style.setProperty('--accent-color', savedAccent);
+        if (savedBg) {
+            document.documentElement.style.setProperty('--bg-color', savedBg);
+            document.documentElement.style.setProperty('--card-bg', savedBg);
+        }
+        if (savedText) document.documentElement.style.setProperty('--text-color', savedText);
+
+        // Dil yönü ayarı (RTL / LTR)
+        const currentLang = localStorage.getItem('user_lang') || 'tr';
+        if (currentLang === 'ar') {
+            document.documentElement.setAttribute('dir', 'rtl');
+        } else {
+            document.documentElement.setAttribute('dir', 'ltr');
+        }
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kıble Pusulası | Ayetin Vakti</title>
+    <title data-i18n="page_title">Kıble Pusulası | Ayetin Vakti</title>
     
     <!-- Sosyal Medya & Mesajlaşma Önizleme Etiketleri -->
     <meta property="og:title" content="Kıble Pusulası | Ayetin Vakti">
     <meta property="og:description" content="Hassas pusula, titreşim ve sesli onay desteğiyle Kıble yönünüzü kolayca bulun.">
     <meta property="og:type" content="website">
-
-    <!-- Tema Sıçramasını Önleyici Erken Betik -->
-    <script>
-        (function() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
-                document.documentElement.setAttribute('data-theme', 'light');
-            }
-        })();
-    </script>
 
     <style>
         /* Gece Teması (Varsayılan Koyu Mode) */
@@ -163,13 +186,11 @@
             transition: transform 0.1s ease-out, border-color 0.3s ease;
         }
 
-        /* Kıbleye Hizalanınca Pusula Çerçevesi Parlasın */
         .compass-circle.aligned {
             border-color: var(--accent-color);
             box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
         }
 
-        /* Yön Harfleri */
         .direction {
             position: absolute;
             font-weight: bold;
@@ -182,7 +203,6 @@
         .direction.s { bottom: 10px; left: 50%; transform: translateX(-50%); }
         .direction.w { left: 15px; top: 50%; transform: translateY(-50%); }
 
-        /* Kıble İbresi */
         .qibla-pointer {
             position: absolute;
             width: 100%;
@@ -221,7 +241,6 @@
             border: 2px solid var(--bg-color);
         }
 
-        /* Bilgi Kartları */
         .info-card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -270,24 +289,22 @@
 <body>
 
 <div class="container">
-    <!-- Üst Bar: Yazısız Geri Tuşu ve Yazısız Tema İkonu -->
     <div class="navbar">
         <a href="../" class="home-btn" title="Ana Sayfa">←</a>
         <button class="theme-icon-btn" onclick="toggleTheme()" id="theme-btn" title="Tema Değiştir">☀️</button>
     </div>
 
     <div class="header">
-        <h1>Kıble Pusulası</h1>
-        <p id="status-text">Konum ve pusula izni bekleniyor...</p>
+        <h1 data-i18n="header_title">Kıble Pusulası</h1>
+        <p id="status-text" data-i18n="status_waiting">Konum ve pusula izni bekleniyor...</p>
     </div>
 
-    <!-- Pusula Alanı -->
     <div class="compass-wrapper">
         <div class="compass-circle" id="compass">
-            <span class="direction n">K</span>
-            <span class="direction e">D</span>
-            <span class="direction s">G</span>
-            <span class="direction w">B</span>
+            <span class="direction n" data-i18n="dir_n">K</span>
+            <span class="direction e" data-i18n="dir_e">D</span>
+            <span class="direction s" data-i18n="dir_s">G</span>
+            <span class="direction w" data-i18n="dir_w">B</span>
         </div>
         <div class="qibla-pointer" id="qibla-pointer">
             <div class="kaaba-icon">🕋</div>
@@ -296,21 +313,66 @@
         <div class="center-dot"></div>
     </div>
 
-    <!-- İzin ve Başlatma Butonu -->
-    <button class="btn-permission" id="perm-btn" onclick="requestCompassPermission()">Pusulayı ve Sesi Etkinleştir</button>
+    <button class="btn-permission" id="perm-btn" onclick="requestCompassPermission()" data-i18n="btn_permission">Pusulayı ve Sesi Etkinleştir</button>
 
-    <!-- Derece ve Detay Kartı -->
     <div class="info-card">
-        <div class="info-title">Kıble Açınız</div>
+        <div class="info-title" data-i18n="info_title">Kıble Açınız</div>
         <div class="info-value" id="qibla-angle">--°</div>
     </div>
 
     <div class="footer">
-        <p>Ayetin Vakti • Titreşim & Ses Destekli</p>
+        <p data-i18n="footer_text">Ayetin Vakti • Titreşim & Ses Destekli</p>
     </div>
 </div>
 
 <script>
+    // Dil Sözlüğü
+    const translations = {
+        tr: {
+            page_title: "Kıble Pusulası | Ayetin Vakti",
+            header_title: "Kıble Pusulası",
+            status_waiting: "Konum ve pusula izni bekleniyor...",
+            status_flat: "Cihazınızı düz tutun",
+            status_aligned: "✨ Kıble Yönündesiniz ✨",
+            status_no_location: "Konum alınamadı. Lütfen konum izni verin.",
+            status_no_support: "Tarayıcınız konum özelliğini desteklemiyor.",
+            status_sensor_err: "Pusulayı kullanabilmek için sensör izni vermeniz gerekmektedir.",
+            btn_permission: "Pusulayı ve Sesi Etkinleştir",
+            info_title: "Kıble Açınız",
+            footer_text: "Ayetin Vakti • Titreşim & Ses Destekli",
+            dir_n: "K", dir_e: "D", dir_s: "G", dir_w: "B"
+        },
+        en: {
+            page_title: "Qibla Compass | Ayetin Vakti",
+            header_title: "Qibla Compass",
+            status_waiting: "Waiting for location and compass permission...",
+            status_flat: "Keep your device flat",
+            status_aligned: "✨ You are facing the Qibla ✨",
+            status_no_location: "Could not get location. Please allow location access.",
+            status_no_support: "Your browser does not support geolocation.",
+            status_sensor_err: "Sensor permission is required to use the compass.",
+            btn_permission: "Enable Compass & Audio",
+            info_title: "Qibla Angle",
+            footer_text: "Ayetin Vakti • Vibration & Audio Supported",
+            dir_n: "N", dir_e: "E", dir_s: "S", dir_w: "W"
+        },
+        ar: {
+            page_title: "بوصلة القبلة | آية الوقت",
+            header_title: "بوصلة القبلة",
+            status_waiting: "جاري انتظار إذن الموقع والبوصلة...",
+            status_flat: "اجعل هاتفك مستوياً",
+            status_aligned: "✨ أنت في اتجاه القبلة ✨",
+            status_no_location: "تعذر الحصول على الموقع. يرجى السماح بالوصول للموقع.",
+            status_no_support: "متصفحك لا يدعم خاصية تحديد الموقع.",
+            status_sensor_err: "مطلوب إذن المستشعر لاستخدام البوصلة.",
+            btn_permission: "تفعيل البوصلة والصوت",
+            info_title: "اتجاه القبلة",
+            footer_text: "آية الوقت • يدعم الاهتزاز والصوت",
+            dir_n: "ش", dir_e: "ق", dir_s: "ج", dir_w: "غ"
+        }
+    };
+
+    const activeLang = localStorage.getItem('user_lang') || 'tr';
     let qiblaBearing = 0;
     let isAligned = false; 
     let audioCtx = null;
@@ -318,7 +380,7 @@
     const meccaLat = 21.4225;
     const meccaLng = 39.8262;
 
-    // --- TEMA DEĞİŞTİRME MANTIGI ---
+    // --- TEMA VE DİL BAŞLANGIÇ AYARLARI ---
     function initTheme() {
         const savedTheme = localStorage.getItem('theme') || 'dark';
         applyTheme(savedTheme);
@@ -331,7 +393,6 @@
 
     function applyTheme(theme) {
         const btn = document.getElementById('theme-btn');
-
         if (theme === 'light') {
             document.documentElement.setAttribute('data-theme', 'light');
             if (btn) btn.innerHTML = '🌙';
@@ -369,6 +430,7 @@
 
     // Konum Bilgisi Al
     function initLocation() {
+        const t = translations[activeLang] || translations['tr'];
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
@@ -377,16 +439,16 @@
                     qiblaBearing = calculateQiblaAngle(userLat, userLng);
                     
                     document.getElementById('qibla-angle').innerText = Math.round(qiblaBearing) + '°';
-                    document.getElementById('status-text').innerText = "Cihazınızı düz tutun";
+                    document.getElementById('status-text').innerText = t.status_flat;
 
                     setupCompass();
                 },
                 (error) => {
-                    document.getElementById('status-text').innerText = "Konum alınamadı. Lütfen konum izni verin.";
+                    document.getElementById('status-text').innerText = t.status_no_location;
                 }
             );
         } else {
-            document.getElementById('status-text').innerText = "Tarayıcınız konum özelliğini desteklemiyor.";
+            document.getElementById('status-text').innerText = t.status_no_support;
         }
     }
 
@@ -416,6 +478,7 @@
     }
 
     function requestCompassPermission() {
+        const t = translations[activeLang] || translations['tr'];
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
@@ -426,7 +489,7 @@
                     document.getElementById('perm-btn').style.display = 'none';
                     window.addEventListener('deviceorientation', handleOrientation, true);
                 } else {
-                    alert('Pusulayı kullanabilmek için sensör izni vermeniz gerekmektedir.');
+                    alert(t.status_sensor_err);
                 }
             })
             .catch(console.error);
@@ -453,12 +516,13 @@
             if (diff > 180) diff = 360 - diff;
 
             const compassElem = document.getElementById('compass');
+            const t = translations[activeLang] || translations['tr'];
 
             if (diff <= 4) {
                 if (!isAligned) {
                     isAligned = true;
                     compassElem.classList.add('aligned');
-                    document.getElementById('status-text').innerText = "✨ Kıble Yönündesiniz ✨";
+                    document.getElementById('status-text').innerText = t.status_aligned;
 
                     if (navigator.vibrate) {
                         navigator.vibrate([150, 50, 150]);
@@ -470,7 +534,7 @@
                 if (isAligned) {
                     isAligned = false;
                     compassElem.classList.remove('aligned');
-                    document.getElementById('status-text').innerText = "Cihazınızı düz tutun";
+                    document.getElementById('status-text').innerText = t.status_flat;
                 }
             }
         }
@@ -478,6 +542,21 @@
 
     window.onload = () => {
         initTheme();
+
+        // Dil metinlerini sayfaya uygulama
+        if (translations[activeLang]) {
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (translations[activeLang][key]) {
+                    if (element.tagName === 'TITLE') {
+                        document.title = translations[activeLang][key];
+                    } else {
+                        element.textContent = translations[activeLang][key];
+                    }
+                }
+            });
+        }
+
         initLocation();
     };
 </script>
