@@ -10,7 +10,8 @@
         const savedTheme = localStorage.getItem('theme');
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         if (savedTheme === 'light' || (!savedTheme && !systemPrefersDark)) {
-            document.documentElement.setAttribute('data-theme', 'light');
+            document.documentElement.classList.add('light-mode');
+            document.body && document.body.classList.add('light-mode');
         }
 
         // Ayarlardan kaydedilen özel renkleri hemen uygula
@@ -58,7 +59,7 @@
         }
 
         /* Gündüz Teması (Açık Mode) */
-        [data-theme="light"] {
+        html.light-mode, body.light-mode {
             --bg-color: #f8fafc;
             --card-bg: #ffffff;
             --accent-color: #059669;
@@ -304,7 +305,7 @@
             <span class="direction n" data-i18n="dir_n">K</span>
             <span class="direction e" data-i18n="dir_e">D</span>
             <span class="direction s" data-i18n="dir_s">G</span>
-            <span class="direction w" data-i18n="dir_w">B</span>
+            <span class="direction w" data-i18n="dir_b">B</span>
         </div>
         <div class="qibla-pointer" id="qibla-pointer">
             <div class="kaaba-icon">🕋</div>
@@ -372,7 +373,6 @@
         }
     };
 
-    const activeLang = localStorage.getItem('user_lang') || 'tr';
     let qiblaBearing = 0;
     let isAligned = false; 
     let audioCtx = null;
@@ -381,28 +381,45 @@
     const meccaLng = 39.8262;
 
     // --- TEMA VE DİL BAŞLANGIÇ AYARLARI ---
-    function initTheme() {
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        applyTheme(savedTheme);
+    const themeBtn = document.getElementById('theme-btn');
+
+    function updateThemeButton(isLight) {
+        if (themeBtn) {
+            themeBtn.textContent = isLight ? '☀️' : '🌙';
+        }
+    }
+
+    function setTheme(isLight) {
+        if (isLight) {
+            document.documentElement.classList.add('light-mode');
+            document.body.classList.add('light-mode');
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.documentElement.classList.remove('light-mode');
+            document.body.classList.remove('light-mode');
+            localStorage.setItem('theme', 'dark');
+        }
+        updateThemeButton(isLight);
     }
 
     function toggleTheme() {
-        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        applyTheme(isLight ? 'dark' : 'light');
+        const isLight = document.documentElement.classList.contains('light-mode');
+        setTheme(!isLight);
     }
 
-    function applyTheme(theme) {
-        const btn = document.getElementById('theme-btn');
-        if (theme === 'light') {
-            document.documentElement.setAttribute('data-theme', 'light');
-            if (btn) btn.innerHTML = '🌙';
-            localStorage.setItem('theme', 'light');
-        } else {
-            document.documentElement.removeAttribute('data-theme');
-            if (btn) btn.innerHTML = '☀️';
-            localStorage.setItem('theme', 'dark');
-        }
+    // İlk yükleme tema durumu
+    const savedThemeInitial = localStorage.getItem('theme');
+    const systemPrefersDarkInitial = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isLightInitial = (savedThemeInitial === 'light') || (!savedThemeInitial && !systemPrefersDarkInitial);
+
+    if (isLightInitial) {
+        document.documentElement.classList.add('light-mode');
+        document.body.classList.add('light-mode');
+    } else {
+        document.documentElement.classList.remove('light-mode');
+        document.body.classList.remove('light-mode');
     }
+    updateThemeButton(isLightInitial);
 
     // Web Audio API ile Dosyasız Bip Sesi Üretici
     function playBeep() {
@@ -430,7 +447,7 @@
 
     // Konum Bilgisi Al
     function initLocation() {
-        const t = translations[activeLang] || translations['tr'];
+        const t = translations[currentLang] || translations['tr'];
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
@@ -478,7 +495,7 @@
     }
 
     function requestCompassPermission() {
-        const t = translations[activeLang] || translations['tr'];
+        const t = translations[currentLang] || translations['tr'];
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
@@ -516,7 +533,7 @@
             if (diff > 180) diff = 360 - diff;
 
             const compassElem = document.getElementById('compass');
-            const t = translations[activeLang] || translations['tr'];
+            const t = translations[currentLang] || translations['tr'];
 
             if (diff <= 4) {
                 if (!isAligned) {
@@ -541,17 +558,15 @@
     }
 
     window.onload = () => {
-        initTheme();
-
         // Dil metinlerini sayfaya uygulama
-        if (translations[activeLang]) {
+        if (translations[currentLang]) {
             document.querySelectorAll('[data-i18n]').forEach(element => {
                 const key = element.getAttribute('data-i18n');
-                if (translations[activeLang][key]) {
+                if (translations[currentLang][key]) {
                     if (element.tagName === 'TITLE') {
-                        document.title = translations[activeLang][key];
+                        document.title = translations[currentLang][key];
                     } else {
-                        element.textContent = translations[activeLang][key];
+                        element.textContent = translations[currentLang][key];
                     }
                 }
             });
