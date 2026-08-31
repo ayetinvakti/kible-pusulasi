@@ -6,7 +6,6 @@
     <meta http-equiv="Expires" content="0">
 
     <script>
-        // Tema and Özel Renk Paleti Kontrolü (Sayfa yüklenmeden önce çalışır, titremeyi önler)
         const savedTheme = localStorage.getItem('theme');
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         if (savedTheme === 'light' || (!savedTheme && !systemPrefersDark)) {
@@ -14,7 +13,6 @@
             document.body && document.body.classList.add('light-mode');
         }
 
-        // Ayarlardan kaydedilen özel renkleri hemen uygula
         const savedAccent = localStorage.getItem('custom_accent');
         const savedBg = localStorage.getItem('custom_bg');
         const savedText = localStorage.getItem('custom_text');
@@ -26,7 +24,6 @@
         }
         if (savedText) document.documentElement.style.setProperty('--text-color', savedText);
 
-        // Dil yönü ayarı (RTL / LTR)
         const currentLang = localStorage.getItem('user_lang') || 'tr';
         if (currentLang === 'ar') {
             document.documentElement.setAttribute('dir', 'rtl');
@@ -39,13 +36,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title data-i18n="page_title">Kıble Pusulası | Ayetin Vakti</title>
     
-    <!-- Sosyal Medya & Mesajlaşma Önizleme Etiketleri -->
     <meta property="og:title" content="Kıble Pusulası | Ayetin Vakti">
     <meta property="og:description" content="Hassas pusula, titreşim ve sesli onay desteğiyle Kıble yönünüzü kolayca bulun.">
     <meta property="og:type" content="website">
 
     <style>
-        /* Gece Teması (Varsayılan Koyu Mode) */
         :root {
             --bg-color: #0f172a;
             --card-bg: #1e293b;
@@ -58,7 +53,6 @@
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
         }
 
-        /* Gündüz Teması (Açık Mode) */
         html.light-mode, body.light-mode {
             --bg-color: #f8fafc;
             --card-bg: #ffffff;
@@ -100,17 +94,16 @@
             align-items: center;
         }
 
-        /* Navbar & Yuvarlak Buton Düzeni */
         .navbar {
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             position: relative;
         }
 
-        .home-btn {
+        .home-btn, .theme-icon-btn {
             background-color: var(--btn-bg);
             border: 1px solid var(--border-color);
             color: var(--text-color);
@@ -126,90 +119,140 @@
             text-decoration: none;
         }
 
-        .home-btn:hover {
+        .home-btn:hover, .theme-icon-btn:hover {
             background-color: var(--btn-hover);
         }
 
-        .theme-icon-btn {
-            background-color: var(--btn-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            font-size: 1.1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .theme-icon-btn:hover {
-            background-color: var(--btn-hover);
-        }
-
-        .header {
+        /* Üst Açı Bilgi Paneli (Örnek Resimdeki Gibi Yan Yana) */
+        .top-stats {
             width: 100%;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 15px;
             margin-bottom: 10px;
         }
 
-        .header h1 {
-            font-size: 1.6rem;
-            color: var(--accent-color);
-            margin-bottom: 6px;
+        .stat-item {
+            text-align: left;
         }
 
-        .header p {
+        .stat-item:last-child {
+            text-align: right;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
             color: var(--text-muted);
-            font-size: 0.9rem;
+            margin-bottom: 2px;
         }
 
-        /* Pusula Alanı */
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .stat-value span {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+
+        /* Yeni Nesil Pusula Alanı */
         .compass-wrapper {
             position: relative;
-            width: 280px;
-            height: 280px;
-            margin: 15px 0 25px 0;
+            width: 290px;
+            height: 290px;
+            margin: 10px 0 15px 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
+        }
+
+        /* Arka plandaki şık ışık/gradient halka efekti */
+        .compass-bg-glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-color) 0%, rgba(0,0,0,0) 70%);
+            opacity: 0.15;
+            z-index: 0;
         }
 
         .compass-circle {
-            width: 98%; /* 100% yerine hafifçe küçülterek Safari çizgi taşmasını maskeliyoruz */
-            height: 98%;
+            width: 275px;
+            height: 275px;
             border-radius: 50%;
             background-color: var(--card-bg);
-            border: 4px solid var(--border-color); /* Normal çerçeveye geri döndük */
             position: relative;
-            box-shadow: var(--shadow);
-            transition: transform 0.1s ease-out, border-color 0.3s ease;
+            box-shadow: var(--shadow), inset 0 0 15px rgba(0,0,0,0.3);
+            transition: transform 0.1s ease-out;
             transform: translateZ(0);
             -webkit-transform: translateZ(0);
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
+            z-index: 1;
         }
 
-        .compass-circle.aligned {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
+        /* Kadran üzerindeki çizgiler ve harfler */
+        .compass-tick {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 100%;
+            transform-origin: center;
+            pointer-events: none;
+        }
+        
+        .compass-tick::before {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 0;
+            width: 2px;
+            height: 8px;
+            background-color: var(--border-color);
         }
 
         .direction {
             position: absolute;
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: var(--text-muted);
+            z-index: 2;
         }
 
-        .direction.n { top: 10px; left: 50%; transform: translateX(-50%); color: #ef4444; }
-        .direction.e { right: 15px; top: 50%; transform: translateY(-50%); }
-        .direction.s { bottom: 10px; left: 50%; transform: translateX(-50%); }
-        .direction.w { left: 15px; top: 50%; transform: translateY(-50%); }
+        .direction.n { top: 12px; left: 50%; transform: translateX(-50%); color: #ef4444; }
+        .direction.e { right: 16px; top: 50%; transform: translateY(-50%); }
+        .direction.s { bottom: 12px; left: 50%; transform: translateX(-50%); }
+        .direction.w { left: 16px; top: 50%; transform: translateY(-50%); }
 
+        /* Ortadaki Kâbe İkonlu Sabit Yuva (Örnek Resimdeki Gibi) */
+        .compass-center-hub {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 64px;
+            height: 64px;
+            background-color: var(--card-bg);
+            border-radius: 50%;
+            border: 2px solid var(--accent-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+        }
+
+        .compass-center-hub .kaaba-hub-icon {
+            font-size: 1.8rem;
+            filter: drop-shadow(0 0 5px var(--accent-color));
+        }
+
+        /* Kıble Yönü Ok İşareti (Dönen veya Konumlanan) */
         .qibla-pointer {
             position: absolute;
             width: 100%;
@@ -220,60 +263,61 @@
             justify-content: center;
             align-items: center;
             transition: transform 0.1s ease-out;
+            z-index: 5;
+            pointer-events: none;
         }
 
         .pointer-arrow {
             width: 0;
             height: 0;
-            border-left: 14px solid transparent;
-            border-right: 14px solid transparent;
-            border-bottom: 90px solid var(--accent-color);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 95px solid var(--accent-color);
             position: absolute;
-            top: 30px;
-            filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.6));
+            top: 18px;
+            filter: drop-shadow(0 0 6px var(--accent-color));
         }
 
-        .kaaba-icon {
-            position: absolute;
-            top: 5px;
-            font-size: 1.5rem;
+        /* Alt Durum Butonu ve Bilgi Kartları */
+        .status-button-card {
+            background-color: var(--btn-bg);
+            border: 1px solid var(--border-color);
+            color: var(--accent-color);
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-align: center;
+            width: 85%;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
         }
 
-        .center-dot {
-            width: 16px;
-            height: 16px;
+        .status-button-card.aligned {
             background-color: var(--accent-color);
-            border-radius: 50%;
-            z-index: 10;
-            border: 2px solid var(--bg-color);
+            color: #ffffff;
         }
 
         .info-card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 16px;
+            padding: 12px 16px;
             width: 100%;
-            text-align: center;
-            margin-top: 10px;
-            box-shadow: var(--shadow);
             display: flex;
-            justify-content: space-around;
+            align-items: center;
+            justify-content: center;
             gap: 10px;
-        }
-
-        .info-box {
-            flex: 1;
+            box-shadow: var(--shadow);
         }
 
         .info-title {
             color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-bottom: 5px;
+            font-size: 0.9rem;
         }
 
         .info-value {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 700;
             color: var(--text-color);
         }
@@ -287,13 +331,14 @@
             font-weight: bold;
             font-size: 1rem;
             cursor: pointer;
-            margin-top: 15px;
+            margin-top: 10px;
             display: none;
+            width: 100%;
         }
 
         .footer {
             margin-top: auto;
-            padding-top: 20px;
+            padding-top: 15px;
             text-align: center;
             font-size: 0.85rem;
             color: var(--text-muted);
@@ -308,35 +353,62 @@
         <button class="theme-icon-btn" onclick="toggleTheme()" id="theme-btn" title="Tema Değiştir">☀️</button>
     </div>
 
-    <div class="header">
-        <h1 data-i18n="header_title">Kıble Pusulası</h1>
-        <p id="status-text" data-i18n="status_waiting">Konum ve pusula izni bekleniyor...</p>
+    <!-- Üst Bilgi Alanı (Örnek Görsel Düzeni) -->
+    <div class="top-stats">
+        <div class="stat-item">
+            <div class="stat-label" data-i18n="label_current">Mevcut Yön</div>
+            <div class="stat-value" id="current-angle">--° <span id="current-dir-code">--</span></div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label" data-i18n="label_qibla">Kıble Yönü</div>
+            <div class="stat-value" id="qibla-angle-top">--°</div>
+        </div>
     </div>
 
+    <!-- Pusula Tasarımı -->
     <div class="compass-wrapper">
+        <div class="compass-bg-glow"></div>
         <div class="compass-circle" id="compass">
+            <!-- Kadran Çizgileri -->
+            <div class="compass-tick" style="transform: rotate(30deg);"></div>
+            <div class="compass-tick" style="transform: rotate(60deg);"></div>
+            <div class="compass-tick" style="transform: rotate(120deg);"></div>
+            <div class="compass-tick" style="transform: rotate(150deg);"></div>
+            <div class="compass-tick" style="transform: rotate(210deg);"></div>
+            <div class="compass-tick" style="transform: rotate(240deg);"></div>
+            <div class="compass-tick" style="transform: rotate(300deg);"></div>
+            <div class="compass-tick" style="transform: rotate(330deg);"></div>
+
             <span class="direction n" data-i18n="dir_n">K</span>
             <span class="direction e" data-i18n="dir_e">D</span>
             <span class="direction s" data-i18n="dir_s">G</span>
             <span class="direction w" data-i18n="dir_b">B</span>
         </div>
+
+        <!-- Kıbleyi Gösteren Ok -->
         <div class="qibla-pointer" id="qibla-pointer">
-            <div class="kaaba-icon">🕋</div>
             <div class="pointer-arrow"></div>
         </div>
-        <div class="center-dot"></div>
+
+        <!-- Ortadaki Sabit Kâbe Yuvası -->
+        <div class="compass-center-hub">
+            <div class="kaaba-hub-icon">🕋</div>
+        </div>
+    </div>
+
+    <!-- Durum Çubuğu (Örnekteki gibi hap buton) -->
+    <div class="status-button-card" id="status-card">
+        <span id="status-text" data-i18n="status_waiting">Konum ve pusula izni bekleniyor...</span>
     </div>
 
     <button class="btn-permission" id="perm-btn" onclick="requestCompassPermission()" data-i18n="btn_permission">Pusulayı ve Sesi Etkinleştir</button>
 
+    <!-- Mesafe Kartı -->
     <div class="info-card">
-        <div class="info-box">
-            <div class="info-title" data-i18n="info_title">Kıble Açınız</div>
-            <div class="info-value" id="qibla-angle">--°</div>
-        </div>
-        <div class="info-box" style="border-left: 1px solid var(--border-color);">
-            <div class="info-title" data-i18n="info_distance_title">Kâbe'ye Mesafe</div>
-            <div class="info-value" id="kaaba-distance">-- km</div>
+        <span style="font-size: 1.3rem;">🕋</span>
+        <div>
+            <span class="info-title" data-i18n="info_distance_title">Kâbe'ye Uzaklık:</span>
+            <span class="info-value" id="kaaba-distance">-- km</span>
         </div>
     </div>
 
@@ -346,52 +418,51 @@
 </div>
 
 <script>
-    // Dil Sözlüğü
     const translations = {
         tr: {
             page_title: "Kıble Pusulası | Ayetin Vakti",
-            header_title: "Kıble Pusulası",
+            label_current: "Mevcut Yön",
+            label_qibla: "Kıble Yönü",
             status_waiting: "Konum ve pusula izni bekleniyor...",
             status_flat: "Cihazınızı düz tutun",
-            status_aligned: "✨ Kıble Yönündesiniz ✨",
+            status_aligned: "Kıble Yönündesiniz",
             status_no_location: "Konum alınamadı. Lütfen konum izni verin.",
             status_no_support: "Tarayıcınız konum özelliğini desteklemiyor.",
             status_sensor_err: "Pusulayı kullanabilmek için sensör izni vermeniz gerekmektedir.",
             btn_permission: "Pusulayı ve Sesi Etkinleştir",
-            info_title: "Kıble Açınız",
-            info_distance_title: "Kâbe'ye Mesafe",
+            info_distance_title: "Kâbe'ye Uzaklık",
             footer_text: "Ayetin Vakti • Titreşim & Ses Destekli",
-            dir_n: "K", dir_e: "D", dir_s: "G", dir_w: "B"
+            dir_n: "K", dir_e: "D", dir_s: "G", dir_b: "B"
         },
         en: {
             page_title: "Qibla Compass | Ayetin Vakti",
-            header_title: "Qibla Compass",
+            label_current: "Current Direction",
+            label_qibla: "Qibla Direction",
             status_waiting: "Waiting for location and compass permission...",
             status_flat: "Keep your device flat",
-            status_aligned: "✨ You are facing the Qibla ✨",
+            status_aligned: "You are facing the Qibla",
             status_no_location: "Could not get location. Please allow location access.",
             status_no_support: "Your browser does not support geolocation.",
             status_sensor_err: "Sensor permission is required to use the compass.",
             btn_permission: "Enable Compass & Audio",
-            info_title: "Qibla Angle",
             info_distance_title: "Distance to Kaaba",
             footer_text: "Ayetin Vakti • Vibration & Audio Supported",
-            dir_n: "N", dir_e: "E", dir_s: "S", dir_w: "W"
+            dir_n: "N", dir_e: "E", dir_s: "S", dir_b: "W"
         },
         ar: {
             page_title: "بوصلة القبلة | آية الوقت",
-            header_title: "بوصلة القبلة",
+            label_current: "الأتجاه الحالي",
+            label_qibla: "اتجاه القبلة",
             status_waiting: "جاري انتظار إذن الموقع والبوصلة...",
             status_flat: "اجعل هاتفك مستوياً",
-            status_aligned: "✨ أنت في اتجاه القبلة ✨",
+            status_aligned: "أنت في اتجاه القبلة",
             status_no_location: "تعذر الحصول على الموقع. يرجى السماح بالوصول للموقع.",
             status_no_support: "متصفحك لا يدعم خاصية تحديد الموقع.",
             status_sensor_err: "مطلوب إذن المستشعر لاستخدام البوصلة.",
             btn_permission: "تفعيل البوصلة والصوت",
-            info_title: "اتجاه القبلة",
             info_distance_title: "المسافة إلى الكعبة",
             footer_text: "آية الوقت • يدعم الاهتزاز والصوت",
-            dir_n: "ش", dir_e: "ق", dir_s: "ج", dir_w: "غ"
+            dir_n: "ش", dir_e: "ق", dir_s: "ج", dir_b: "غ"
         }
     };
 
@@ -402,7 +473,6 @@
     const meccaLat = 21.4225;
     const meccaLng = 39.8262;
 
-    // --- TEMA VE DİL BAŞLANGIÇ AYARLARI ---
     const themeBtn = document.getElementById('theme-btn');
 
     function updateThemeButton(isLight) {
@@ -429,7 +499,6 @@
         setTheme(!isLight);
     }
 
-    // İlk yükleme tema durumu
     const savedThemeInitial = localStorage.getItem('theme');
     const systemPrefersDarkInitial = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const isLightInitial = (savedThemeInitial === 'light') || (!savedThemeInitial && !systemPrefersDarkInitial);
@@ -443,7 +512,6 @@
     }
     updateThemeButton(isLightInitial);
 
-    // Web Audio API ile Dosyasız Bip Sesi Üretici
     function playBeep() {
         try {
             if (!audioCtx) {
@@ -467,9 +535,8 @@
         }
     }
 
-    // Haversine Formülü ile Kâbe'ye Olan Mesafeyi Hesapla (km)
     function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371; // Dünya'nın yarıçapı (km)
+        const R = 6371;
         const dLat = (lat2 - lat1) * Math.PI / 180;
         const dLon = (lon2 - lon1) * Math.PI / 180;
         const a = 
@@ -480,7 +547,12 @@
         return Math.round(R * c);
     }
 
-    // Konum Bilgisi Al
+    function getDirectionText(degrees) {
+        const directions = ['K', 'KD', 'D', 'GD', 'G', 'GB', 'B', 'KB'];
+        const index = Math.round((degrees % 360) / 45);
+        return directions[index % 8];
+    }
+
     function initLocation() {
         const t = translations[currentLang] || translations['tr'];
         if (navigator.geolocation) {
@@ -491,7 +563,7 @@
                     qiblaBearing = calculateQiblaAngle(userLat, userLng);
                     const distanceToKaaba = calculateDistance(userLat, userLng, meccaLat, meccaLng);
                     
-                    document.getElementById('qibla-angle').innerText = Math.round(qiblaBearing) + '°';
+                    document.getElementById('qibla-angle-top').innerText = Math.round(qiblaBearing) + '°';
                     document.getElementById('kaaba-distance').innerText = distanceToKaaba.toLocaleString() + ' km';
                     document.getElementById('status-text').innerText = t.status_flat;
 
@@ -506,7 +578,6 @@
         }
     }
 
-    // Kıble Açısını Hesapla
     function calculateQiblaAngle(lat, lng) {
         const phiK = meccaLat * Math.PI / 180;
         const lambdaK = meccaLng * Math.PI / 180;
@@ -521,7 +592,6 @@
         return (qibla * 180 / Math.PI + 360) % 360;
     }
 
-    // Pusula Sensörünü Başlat
     function setupCompass() {
         if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
             document.getElementById('perm-btn').style.display = 'block';
@@ -549,7 +619,6 @@
             .catch(console.error);
     }
 
-    // Cihaz Döndükçe Pusulayı Kontrol Et
     function handleOrientation(event) {
         let heading = event.alpha;
 
@@ -560,23 +629,29 @@
         }
 
         if (heading !== undefined && heading !== null) {
+            const normalizedHeading = (heading + 360) % 360;
+            
+            // Üst kısımdaki mevcut yön göstergesini güncelle
+            document.getElementById('current-angle').firstChild.nodeValue = Math.round(normalizedHeading) + '° ';
+            document.getElementById('current-dir-code').innerText = getDirectionText(normalizedHeading);
+
+            // Pusulayı döndür
             document.getElementById('compass').style.transform = `rotate(${-heading}deg)`;
             
             const qiblaRotation = qiblaBearing - heading;
             document.getElementById('qibla-pointer').style.transform = `rotate(${qiblaRotation}deg)`;
 
-            // Kıbleye Hizalanma Kontrolü
             let diff = Math.abs((heading - qiblaBearing + 360) % 360);
             if (diff > 180) diff = 360 - diff;
 
-            const compassElem = document.getElementById('compass');
+            const statusCard = document.getElementById('status-card');
             const t = translations[currentLang] || translations['tr'];
 
             if (diff <= 4) {
                 if (!isAligned) {
                     isAligned = true;
-                    compassElem.classList.add('aligned');
-                    document.getElementById('status-text').innerText = t.status_aligned;
+                    statusCard.classList.add('aligned');
+                    document.getElementById('status-text').innerText = "✨ " + t.status_aligned + " ✨";
 
                     if (navigator.vibrate) {
                         navigator.vibrate([150, 50, 150]);
@@ -587,7 +662,7 @@
             } else {
                 if (isAligned) {
                     isAligned = false;
-                    compassElem.classList.remove('aligned');
+                    statusCard.classList.remove('aligned');
                     document.getElementById('status-text').innerText = t.status_flat;
                 }
             }
@@ -595,7 +670,6 @@
     }
 
     window.onload = () => {
-        // Dil metinlerini sayfaya uygulama
         if (translations[currentLang]) {
             document.querySelectorAll('[data-i18n]').forEach(element => {
                 const key = element.getAttribute('data-i18n');
