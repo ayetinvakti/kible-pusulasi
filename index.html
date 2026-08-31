@@ -251,6 +251,13 @@
             text-align: center;
             margin-top: 10px;
             box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+
+        .info-box {
+            flex: 1;
         }
 
         .info-title {
@@ -260,7 +267,7 @@
         }
 
         .info-value {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: var(--text-color);
         }
@@ -317,8 +324,14 @@
     <button class="btn-permission" id="perm-btn" onclick="requestCompassPermission()" data-i18n="btn_permission">Pusulayı ve Sesi Etkinleştir</button>
 
     <div class="info-card">
-        <div class="info-title" data-i18n="info_title">Kıble Açınız</div>
-        <div class="info-value" id="qibla-angle">--°</div>
+        <div class="info-box">
+            <div class="info-title" data-i18n="info_title">Kıble Açınız</div>
+            <div class="info-value" id="qibla-angle">--°</div>
+        </div>
+        <div class="info-box" style="border-left: 1px solid var(--border-color);">
+            <div class="info-title" data-i18n="info_distance_title">Kâbe'ye Mesafe</div>
+            <div class="info-value" id="kaaba-distance">-- km</div>
+        </div>
     </div>
 
     <div class="footer">
@@ -340,6 +353,7 @@
             status_sensor_err: "Pusulayı kullanabilmek için sensör izni vermeniz gerekmektedir.",
             btn_permission: "Pusulayı ve Sesi Etkinleştir",
             info_title: "Kıble Açınız",
+            info_distance_title: "Kâbe'ye Mesafe",
             footer_text: "Ayetin Vakti • Titreşim & Ses Destekli",
             dir_n: "K", dir_e: "D", dir_s: "G", dir_w: "B"
         },
@@ -354,6 +368,7 @@
             status_sensor_err: "Sensor permission is required to use the compass.",
             btn_permission: "Enable Compass & Audio",
             info_title: "Qibla Angle",
+            info_distance_title: "Distance to Kaaba",
             footer_text: "Ayetin Vakti • Vibration & Audio Supported",
             dir_n: "N", dir_e: "E", dir_s: "S", dir_w: "W"
         },
@@ -368,6 +383,7 @@
             status_sensor_err: "مطلوب إذن المستشعر لاستخدام البوصلة.",
             btn_permission: "تفعيل البوصلة والصوت",
             info_title: "اتجاه القبلة",
+            info_distance_title: "المسافة إلى الكعبة",
             footer_text: "آية الوقت • يدعم الاهتزاز والصوت",
             dir_n: "ش", dir_e: "ق", dir_s: "ج", dir_w: "غ"
         }
@@ -445,6 +461,19 @@
         }
     }
 
+    // Haversine Formülü ile Kâbe'ye Olan Mesafeyi Hesapla (km)
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Dünya'nın yarıçapı (km)
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return Math.round(R * c);
+    }
+
     // Konum Bilgisi Al
     function initLocation() {
         const t = translations[currentLang] || translations['tr'];
@@ -454,8 +483,10 @@
                     const userLat = position.coords.latitude;
                     const userLng = position.coords.longitude;
                     qiblaBearing = calculateQiblaAngle(userLat, userLng);
+                    const distanceToKaaba = calculateDistance(userLat, userLng, meccaLat, meccaLng);
                     
                     document.getElementById('qibla-angle').innerText = Math.round(qiblaBearing) + '°';
+                    document.getElementById('kaaba-distance').innerText = distanceToKaaba.toLocaleString() + ' km';
                     document.getElementById('status-text').innerText = t.status_flat;
 
                     setupCompass();
