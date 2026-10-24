@@ -174,6 +174,9 @@
         }
         .btn-permission.secondary { background: var(--btn-bg); color: var(--text-color); border: 1px solid var(--border-color); }
 
+        .diag { width: 100%; margin-top: 10px; font-size: .75rem; color: var(--text-muted); }
+        .diag summary { cursor: pointer; padding: 6px 2px; }
+        .diag pre { white-space: pre-wrap; word-break: break-word; user-select: text; -webkit-user-select: text; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; font-size: .72rem; line-height: 1.5; }
         .footer { margin-top: auto; padding-top: 15px; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
     </style>
 </head>
@@ -246,6 +249,11 @@
         <div class="decl-note" id="decl-note" data-i18n="decl_note">Telefon pusulası manyetik kuzeyi gösterir, Kıble açısı ise gerçek kuzeye göredir. Türkiye'de fark yaklaşık 5-7°'dir; bu değer konumunuza göre tahmini olarak eklenir.</div>
     </div>
 
+    <details class="diag">
+        <summary data-i18n="diag_title">Tanı bilgisi (sorun olursa bunu gönderin)</summary>
+        <pre id="diag-text">...</pre>
+    </details>
+
     <div class="footer">
         <p data-i18n="footer_text">Ayetin Vakti • Titreşim & Ses Destekli</p>
     </div>
@@ -271,6 +279,7 @@
             decl_note: "Telefon pusulası manyetik kuzeyi gösterir, Kıble açısı ise gerçek kuzeye göredir. Türkiye'de fark yaklaşık 5-7°'dir; bu değer konumunuza göre tahmini (±1°) olarak eklenir. Bilinen bir Kıble yönüyle (ör. caminin mihrabı) karşılaştırıp +/− ile ince ayar yapabilirsiniz.",
             decl_outside: "Konumunuz Türkiye dışında; sapma otomatik hesaplanmadı, gerekirse elle ayarlayın.",
             footer_text: "Ayetin Vakti • Titreşim & Ses Destekli",
+            diag_title: "Tanı bilgisi (sorun olursa bunu gönderin)",
             dir_n: "K", dir_e: "D", dir_s: "G", dir_b: "B",
             dirs: ['K', 'KD', 'D', 'GD', 'G', 'GB', 'B', 'KB']
         },
@@ -292,6 +301,7 @@
             decl_note: "A phone compass points to magnetic north, while the Qibla bearing is relative to true north. In Turkey the difference is about 5-7°; this value is added as an estimate (±1°) for your location. You can compare with a known Qibla direction (e.g. a mosque's mihrab) and fine-tune with +/−.",
             decl_outside: "Your location is outside Turkey; declination was not calculated automatically. Adjust manually if needed.",
             footer_text: "Ayetin Vakti • Vibration & Audio Supported",
+            diag_title: "Diagnostics (send this if something is wrong)",
             dir_n: "N", dir_e: "E", dir_s: "S", dir_b: "W",
             dirs: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
         },
@@ -313,6 +323,7 @@
             decl_note: "بوصلة الهاتف تشير إلى الشمال المغناطيسي بينما زاوية القبلة تُقاس من الشمال الحقيقي. في تركيا الفرق نحو 5-7°؛ تُضاف هذه القيمة تقديرياً (±1°) حسب موقعك. يمكنك المقارنة باتجاه قبلة معروف (كمحراب مسجد) وضبطها بـ +/−.",
             decl_outside: "موقعك خارج تركيا؛ لم يُحسب الانحراف تلقائياً. اضبطه يدوياً عند الحاجة.",
             footer_text: "آية الوقت • يدعم الاهتزاز والصوت",
+            diag_title: "معلومات التشخيص (أرسلها عند وجود مشكلة)",
             dir_n: "ش", dir_e: "ق", dir_s: "ج", dir_b: "غ",
             dirs: ['ش', 'ش ق', 'ق', 'ج ق', 'ج', 'ج غ', 'غ', 'ش غ']
         }
@@ -363,6 +374,7 @@
     let qiblaBearing = null, declAuto = 0, declKnown = false;
     let hx = 0, hy = 1, haveHeading = false, accuracy = null, needsRender = false;
     let dialAngle = 0, ptrAngle = 0, isAligned = false, compassStarted = false, audioCtx = null, wakeLock = null;
+    let locSource = '-', locLat = null, locLng = null, sensorKind = 'yok', eventCount = 0, lastDiag = 0, staticQ = null;
     let declOn = localStorage.getItem('qibla_decl_on') !== '0';
     let declAdj = parseFloat(localStorage.getItem('qibla_decl_adj')) || 0;
 
@@ -420,7 +432,8 @@
         document.getElementById('status-card').classList.toggle('aligned', !!aligned);
     }
 
-    function applyLocation(lat, lng, noteText) {
+    function applyLocation(lat, lng, noteText, source) {
+        locSource = source || 'GPS'; locLat = lat; locLng = lng;
         qiblaBearing = calculateQiblaAngle(lat, lng);
         const dist = calculateDistance(lat, lng, meccaLat, meccaLng);
         const d = approxDeclination(lat, lng);
@@ -447,7 +460,7 @@
             const j = await res.json();
             const lat = parseFloat(j.data.meta.latitude), lng = parseFloat(j.data.meta.longitude);
             if (isNaN(lat) || isNaN(lng)) return false;
-            applyLocation(lat, lng, `${t.status_saved_city} ${saved}`);
+            applyLocation(lat, lng, `${t.status_saved_city} ${saved}`, 'kayıtlı şehir: ' + saved);
             return true;
         } catch (e) { return false; }
     }
@@ -458,7 +471,7 @@
             return;
         }
         navigator.geolocation.getCurrentPosition(
-            pos => applyLocation(pos.coords.latitude, pos.coords.longitude, ''),
+            pos => applyLocation(pos.coords.latitude, pos.coords.longitude, '', 'GPS'),
             () => { locationFromSavedCity().then(ok => { if (!ok) { setStatus(t.status_no_location, false); document.getElementById('retry-btn').style.display = 'block'; } }); },
             { enableHighAccuracy: false, timeout: 15000, maximumAge: 600000 }
         );
@@ -469,15 +482,17 @@
         // iOS: doğrudan manyetik yön
         if (typeof e.webkitCompassHeading === 'number' && !isNaN(e.webkitCompassHeading)) {
             accuracy = (typeof e.webkitCompassAccuracy === 'number') ? e.webkitCompassAccuracy : null;
+            sensorKind = 'iOS (webkitCompassHeading)';
             return e.webkitCompassHeading;
         }
         // Android/diğer: yalnızca MUTLAK yönelim kabul edilir (göreli alpha kuzeyi göstermez)
         if (e.alpha === null || e.alpha === undefined) return null;
-        if (e.type === 'deviceorientationabsolute' || e.absolute === true) return headingFromAbsolute(e.alpha, e.beta, e.gamma);
+        if (e.type === 'deviceorientationabsolute' || e.absolute === true) { sensorKind = 'mutlak yönelim (' + e.type + ')'; return headingFromAbsolute(e.alpha, e.beta, e.gamma); }
         return null;
     }
 
     function handleOrientation(e) {
+        eventCount++;
         const h = readMagneticHeading(e);
         if (h === null || isNaN(h)) return;
         const r = h * Math.PI / 180;
@@ -516,10 +531,45 @@
             .catch(console.error);
     }
 
+
+    // ===================== TANI =====================
+    function updateDiag() {
+        const el = document.getElementById('diag-text');
+        if (!el || !el.offsetParent) return;      // panel kapalıyken hesaplama yapma
+        const magHeading = haveHeading ? (Math.atan2(hx, hy) * 180 / Math.PI + 360) % 360 : null;
+        const trueH = magHeading === null ? null : ((magHeading + declTotal()) % 360 + 360) % 360;
+        const f = v => (v === null ? '-' : v.toFixed(1) + '°');
+        el.textContent = [
+            'konum: ' + locSource + (locLat !== null ? ` (${locLat.toFixed(4)}, ${locLng.toFixed(4)})` : ''),
+            'kıble (gerçek kuzeye göre): ' + (qiblaBearing === null ? '-' : qiblaBearing.toFixed(1) + '°'),
+            'sensör: ' + sensorKind + ' | olay sayısı: ' + eventCount,
+            'manyetik yön: ' + f(magHeading),
+            'sapma düzeltmesi: ' + declTotal().toFixed(1) + '° (otomatik ' + declAuto.toFixed(1) + ', elle ' + declAdj.toFixed(1) + ', ' + (declOn ? 'açık' : 'kapalı') + ')',
+            'gerçek yön (telefonun üstü): ' + f(trueH),
+            'kıbleye fark: ' + (trueH === null || qiblaBearing === null ? '-' : angDiff(trueH, qiblaBearing).toFixed(1) + '°'),
+            'doğruluk (iOS): ' + (accuracy === null ? '-' : accuracy),
+            'ekran açısı: ' + ((screen.orientation && screen.orientation.angle !== undefined) ? screen.orientation.angle : (window.orientation !== undefined ? window.orientation : '-')),
+            'tarayıcı: ' + navigator.userAgent.slice(0, 110)
+        ].join('\n');
+    }
+
     // ===================== ÇİZİM DÖNGÜSÜ =====================
     function render() {
         requestAnimationFrame(render);
-        if (!needsRender || !haveHeading) return;
+        const now = performance.now();
+        if (now - lastDiag > 500) { lastDiag = now; updateDiag(); }
+
+        // DÜZELTME: Sensör verisi yokken ok artık sabit "yukarı"yı (kuzey) göstermez;
+        // kadran kuzey yukarıda sabit kalır ve ok gerçek Kıble yönünü (kuzeyden saat yönünde) gösterir.
+        if (!haveHeading) {
+            if (qiblaBearing !== null && staticQ !== qiblaBearing) {
+                staticQ = qiblaBearing; dialAngle = 0; ptrAngle = qiblaBearing;
+                document.getElementById('compass').style.transform = 'rotate(0deg)';
+                document.getElementById('qibla-pointer').style.transform = `rotate(${qiblaBearing.toFixed(2)}deg)`;
+            }
+            return;
+        }
+        if (!needsRender) return;
         needsRender = false;
 
         const magHeading = (Math.atan2(hx, hy) * 180 / Math.PI + 360) % 360;
