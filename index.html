@@ -531,45 +531,10 @@
             .catch(console.error);
     }
 
-
-    // ===================== TANI =====================
-    function updateDiag() {
-        const el = document.getElementById('diag-text');
-        if (!el || !el.offsetParent) return;      // panel kapalıyken hesaplama yapma
-        const magHeading = haveHeading ? (Math.atan2(hx, hy) * 180 / Math.PI + 360) % 360 : null;
-        const trueH = magHeading === null ? null : ((magHeading + declTotal()) % 360 + 360) % 360;
-        const f = v => (v === null ? '-' : v.toFixed(1) + '°');
-        el.textContent = [
-            'konum: ' + locSource + (locLat !== null ? ` (${locLat.toFixed(4)}, ${locLng.toFixed(4)})` : ''),
-            'kıble (gerçek kuzeye göre): ' + (qiblaBearing === null ? '-' : qiblaBearing.toFixed(1) + '°'),
-            'sensör: ' + sensorKind + ' | olay sayısı: ' + eventCount,
-            'manyetik yön: ' + f(magHeading),
-            'sapma düzeltmesi: ' + declTotal().toFixed(1) + '° (otomatik ' + declAuto.toFixed(1) + ', elle ' + declAdj.toFixed(1) + ', ' + (declOn ? 'açık' : 'kapalı') + ')',
-            'gerçek yön (telefonun üstü): ' + f(trueH),
-            'kıbleye fark: ' + (trueH === null || qiblaBearing === null ? '-' : angDiff(trueH, qiblaBearing).toFixed(1) + '°'),
-            'doğruluk (iOS): ' + (accuracy === null ? '-' : accuracy),
-            'ekran açısı: ' + ((screen.orientation && screen.orientation.angle !== undefined) ? screen.orientation.angle : (window.orientation !== undefined ? window.orientation : '-')),
-            'tarayıcı: ' + navigator.userAgent.slice(0, 110)
-        ].join('\n');
-    }
-
     // ===================== ÇİZİM DÖNGÜSÜ =====================
     function render() {
         requestAnimationFrame(render);
-        const now = performance.now();
-        if (now - lastDiag > 500) { lastDiag = now; updateDiag(); }
-
-        // DÜZELTME: Sensör verisi yokken ok artık sabit "yukarı"yı (kuzey) göstermez;
-        // kadran kuzey yukarıda sabit kalır ve ok gerçek Kıble yönünü (kuzeyden saat yönünde) gösterir.
-        if (!haveHeading) {
-            if (qiblaBearing !== null && staticQ !== qiblaBearing) {
-                staticQ = qiblaBearing; dialAngle = 0; ptrAngle = qiblaBearing;
-                document.getElementById('compass').style.transform = 'rotate(0deg)';
-                document.getElementById('qibla-pointer').style.transform = `rotate(${qiblaBearing.toFixed(2)}deg)`;
-            }
-            return;
-        }
-        if (!needsRender) return;
+         if (!needsRender  ||   !haveHeading) return;
         needsRender = false;
 
         const magHeading = (Math.atan2(hx, hy) * 180 / Math.PI + 360) % 360;
