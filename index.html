@@ -526,7 +526,7 @@
     // ===================== ÇİZİM DÖNGÜSÜ =====================
     function render() {
         requestAnimationFrame(render);
-         if (!needsRender  ||   !haveHeading) return;
+        if (!needsRender  ||   !haveHeading) return;
         needsRender = false;
 
         const magHeading = (Math.atan2(hx, hy) * 180 / Math.PI + 360) % 360;
