@@ -5,30 +5,54 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
 
+    <meta charset="UTF-8">
+    <meta name="theme-color" content="#0f172a">
     <script>
-        const savedTheme = localStorage.getItem('theme');
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (savedTheme === 'light' || (!savedTheme && !systemPrefersDark)) {
-            document.documentElement.classList.add('light-mode');
-        }
+        // Tema ve özel renk paleti (titremeyi önlemek için en başta çalışır)
+        (function () {
+            const d = document.documentElement;
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isLight = savedTheme === 'light' || (!savedTheme && !systemPrefersDark);
+            if (isLight) {
+                d.classList.add('light-mode');
+            }
+            const a = localStorage.getItem('custom_accent');
+            const t = localStorage.getItem('custom_text');
+            const b = localStorage.getItem('custom_bg');
+            if (a) d.style.setProperty('--accent-color', a);
+            if (t) d.style.setProperty('--text-color', t);
+            if (b) {
+                d.style.setProperty('--bg-color', b);
+                d.style.setProperty('--card-bg', b);
+            }
+            // Özel arka plan var, yazı rengi seçilmemişse okunabilir renkleri zeminin açıklığına göre seç
+            if (b && !t) {
+                const m = /^#([0-9a-f]{6})$/i.exec(b.trim());
+                if (m) {
+                    const n = parseInt(m[1], 16);
+                    const lin = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+                    const L = 0.2126 * lin(n >> 16) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+                    const bgIsLight = L > 0.18;
+                    d.style.setProperty('--text-color', bgIsLight ? '#0f172a' : '#f8fafc');
+                    d.style.setProperty('--text-muted', bgIsLight ? '#475569' : '#cbd5e1');
+                    d.style.setProperty('--border-color', bgIsLight ? 'rgba(15,23,42,0.18)' : 'rgba(248,250,252,0.22)');
+                    // Buton zeminleri de zemine göre okunabilir kalsın
+                    d.style.setProperty('--btn-bg', bgIsLight ? 'rgba(15,23,42,0.06)' : 'rgba(248,250,252,0.10)');
+                    d.style.setProperty('--btn-hover', bgIsLight ? 'rgba(15,23,42,0.12)' : 'rgba(248,250,252,0.18)');
+                }
+            }
+            // Safari/Chrome üst-alt çubuğu sayfa zeminine uysun
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', b || (isLight ? '#f8fafc' : '#0f172a'));
 
-        const savedAccent = localStorage.getItem('custom_accent');
-        const savedBg = localStorage.getItem('custom_bg');
-        const savedText = localStorage.getItem('custom_text');
-
-        if (savedAccent) document.documentElement.style.setProperty('--accent-color', savedAccent);
-        if (savedBg) {
-            document.documentElement.style.setProperty('--bg-color', savedBg);
-            document.documentElement.style.setProperty('--card-bg', savedBg);
-        }
-        if (savedText) document.documentElement.style.setProperty('--text-color', savedText);
-
-        const currentLang = localStorage.getItem('user_lang') || 'tr';
-        document.documentElement.setAttribute('lang', currentLang);
-        document.documentElement.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
+            // Dil ve yön
+            const currentLang = localStorage.getItem('user_lang') || 'tr';
+            d.setAttribute('lang', currentLang);
+            d.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
+        })();
     </script>
 
-    <meta charset="UTF-8">
     <!-- DÜZELTME: Yakınlaştırmayı engelleyen maximum-scale / user-scalable=no kaldırıldı -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-i18n="page_title">Kıble Pusulası | Ayetin Vakti</title>
@@ -48,6 +72,7 @@
             --btn-bg: rgba(255, 255, 255, 0.05);
             --btn-hover: rgba(255, 255, 255, 0.1);
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            color-scheme: dark;
         }
 
         html.light-mode {
@@ -60,7 +85,10 @@
             --btn-bg: #f1f5f9;
             --btn-hover: #e2e8f0;
             --shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            color-scheme: light;
         }
+
+        html, body, button, a, select, input, label, [onclick] { touch-action: manipulation; }
 
         * {
             box-sizing: border-box;
@@ -93,7 +121,9 @@
             width: 38px; height: 38px; border-radius: 50%; font-size: 1.1rem; font-weight: 600; cursor: pointer;
             display: flex; align-items: center; justify-content: center; text-decoration: none;
         }
-        .home-btn:hover, .theme-icon-btn:hover { background-color: var(--btn-hover); }
+        @media (hover: hover) {
+            .home-btn:hover, .theme-icon-btn:hover { background-color: var(--btn-hover); }
+        }
 
         .top-stats { width: 100%; display: flex; justify-content: space-between; padding: 0 15px; margin-bottom: 10px; }
         .stat-item { text-align: left; }
@@ -375,10 +405,17 @@
         const btn = document.getElementById('theme-btn');
         if (btn) btn.textContent = document.documentElement.classList.contains('light-mode') ? '☀️' : '🌙';
     }
+    function updateThemeColor() {
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (!meta) return;
+        const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim();
+        if (bg) meta.setAttribute('content', bg);
+    }
     function toggleTheme() {
         const isLight = document.documentElement.classList.toggle('light-mode');
         localStorage.setItem('theme', isLight ? 'light' : 'dark');
         updateThemeButton();
+        updateThemeColor();
     }
 
     // ===================== SES / EKRAN =====================
@@ -572,6 +609,7 @@
         });
         document.title = t.page_title;
         updateThemeButton();
+        updateThemeColor();
 
         // Kadran çizgileri (her 10°; 30°'nin katları uzun)
         let ticks = '';
