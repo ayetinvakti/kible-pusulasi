@@ -185,18 +185,7 @@
         .info-title { color: var(--text-muted); font-size: 0.9rem; }
         .info-value { font-size: 1.05rem; font-weight: 700; color: var(--text-color); }
 
-        .decl-card {
-            background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px;
-            width: 100%; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow);
-        }
-        .decl-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-        [dir="rtl"] .decl-row { flex-direction: row-reverse; }
-        .decl-title { font-size: 0.85rem; color: var(--text-muted); }
-        .decl-value { font-weight: 700; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
-        .decl-btns { display: flex; gap: 6px; }
-        .mini-btn { min-width: 34px; height: 32px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--btn-bg); color: var(--text-color); font-weight: 700; cursor: pointer; font-size: .85rem; }
-        .mini-btn.on { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
-        .decl-note { font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; }
+        .decl-note { font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; text-align: center; padding: 0 6px; }
 
         .btn-permission {
             background-color: var(--accent-color); color: #ffffff; border: none; padding: 12px 24px; border-radius: 10px;
@@ -204,6 +193,8 @@
         }
         .btn-permission.secondary { background: var(--btn-bg); color: var(--text-color); border: 1px solid var(--border-color); }
 
+        .compass-wrapper.locked .compass-circle, .compass-wrapper.locked .qibla-pointer { opacity: 0.25; filter: grayscale(1); }
+        .compass-wrapper.locked .heading-marker { opacity: 0.25; }
         .diag { width: 100%; margin-top: 10px; font-size: .75rem; color: var(--text-muted); }
         .diag summary { cursor: pointer; padding: 6px 2px; }
         .diag pre { white-space: pre-wrap; word-break: break-word; user-select: text; -webkit-user-select: text; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; font-size: .72rem; line-height: 1.5; }
@@ -229,7 +220,7 @@
         </div>
     </div>
 
-    <div class="compass-wrapper">
+    <div class="compass-wrapper locked" id="compass-wrapper">
         <div class="compass-bg-glow"></div>
         <div class="heading-marker"></div>
         <div class="compass-circle" id="compass">
@@ -263,21 +254,7 @@
         </div>
     </div>
 
-    <div class="decl-card">
-        <div class="decl-row">
-            <span class="decl-title" data-i18n="decl_title">Manyetik sapma düzeltmesi</span>
-            <button class="mini-btn on" id="decl-toggle" onclick="toggleDecl()">✓</button>
-        </div>
-        <div class="decl-row">
-            <span class="decl-value" id="decl-value">--°</span>
-            <div class="decl-btns">
-                <button class="mini-btn" onclick="adjustDecl(-0.5)" aria-label="-0.5">−</button>
-                <button class="mini-btn" onclick="adjustDecl(0.5)" aria-label="+0.5">+</button>
-                <button class="mini-btn" onclick="adjustDecl(null)" aria-label="reset" title="Sıfırla">↺</button>
-            </div>
-        </div>
-        <div class="decl-note" id="decl-note" data-i18n="decl_note">Telefon pusulası manyetik kuzeyi gösterir, Kıble açısı ise gerçek kuzeye göredir. Türkiye'de fark yaklaşık 5-7°'dir; bu değer konumunuza göre tahmini olarak eklenir.</div>
-    </div>
+    <div class="decl-note"><strong id="decl-line">--</strong><br><span data-i18n="decl_note"></span></div>
 
     <div class="footer">
         <p data-i18n="footer_text">Ayetin Vakti • Titreşim & Ses Destekli</p>
@@ -292,17 +269,19 @@
             status_waiting: "Konum ve pusula izni bekleniyor...",
             status_flat: "Cihazınızı düz tutun",
             status_aligned: "Kıble Yönündesiniz",
-            status_no_location: "Konum alınamadı. Lütfen konum izni verin.",
+            status_no_location: "Konum alınamadı. Pusula, konum izni verilmeden açılmaz.",
+            status_denied: "Konum izni verilmedi. Pusula, konum izni olmadan açılmaz. Tarayıcı ve cihaz ayarlarından konum iznini açıp «Konumu Yeniden Dene»ye dokunun.",
+            status_unavailable: "Cihazın konumu alınamıyor. Telefon/bilgisayarın konum servisini açıp «Konumu Yeniden Dene»ye dokunun.",
+            status_timeout: "Konum zamanında alınamadı. «Konumu Yeniden Dene»ye dokunun.",
             status_no_support: "Tarayıcınız konum özelliğini desteklemiyor.",
             status_sensor_err: "Pusulayı kullanabilmek için sensör izni vermeniz gerekmektedir.",
             status_no_sensor: "Bu cihazda pusula sensörü bulunamadı. Kıble açısı kuzeyden saat yönünde:",
-            status_saved_city: "Konum izni verilmedi; kayıtlı şehre göre hesaplandı:",
             status_calibrate: "Pusula doğruluğu düşük: telefonu havada 8 şeklinde çevirin",
             btn_permission: "Pusulayı ve Sesi Etkinleştir", btn_retry: "Konumu Yeniden Dene",
             info_distance_title: "Kâbe'ye Uzaklık:",
-            decl_title: "Manyetik sapma düzeltmesi",
-            decl_note: "Telefon pusulası manyetik kuzeyi gösterir, Kıble açısı ise gerçek kuzeye göredir. Türkiye'de fark yaklaşık 5-7°'dir; bu değer konumunuza göre tahmini (±1°) olarak eklenir. Bilinen bir Kıble yönüyle (ör. caminin mihrabı) karşılaştırıp +/− ile ince ayar yapabilirsiniz.",
-            decl_outside: "Konumunuz Türkiye dışında; sapma otomatik hesaplanmadı, gerekirse elle ayarlayın.",
+            decl_note: "Telefon pusulası manyetik kuzeyi gösterir; Kıble açısı ise gerçek kuzeye göre hesaplanır. Aradaki fark (manyetik sapma), NOAA/NCEI ve BGS'nin Dünya Manyetik Modeli WMM2025 ile konumunuza göre hesaplanıp eklenir; model 31 Aralık 2029'a kadar geçerlidir. Metal eşyalar, mıknatıslar ve elektronik cihazlar pusulayı etkileyebilir.",
+            decl_label: "Manyetik sapma",
+            decl_none: "Sapma modeli bu tarih için geçerli değil; düzeltme uygulanmıyor ve yön onayı kapalı.",
             footer_text: "Ayetin Vakti • Titreşim & Ses Destekli",
             dir_n: "K", dir_e: "D", dir_s: "G", dir_b: "B",
             dirs: ['K', 'KD', 'D', 'GD', 'G', 'GB', 'B', 'KB']
@@ -313,17 +292,19 @@
             status_waiting: "Waiting for location and compass permission...",
             status_flat: "Keep your device flat",
             status_aligned: "You are facing the Qibla",
-            status_no_location: "Could not get location. Please allow location access.",
+            status_no_location: "Could not get location. The compass will not open without location permission.",
+            status_denied: "Location permission was not granted. The compass will not open without it. Enable location in your browser and device settings, then tap “Retry Location”.",
+            status_unavailable: "Your device location is unavailable. Turn on the device's location service, then tap “Retry Location”.",
+            status_timeout: "Location timed out. Tap “Retry Location”.",
             status_no_support: "Your browser does not support geolocation.",
             status_sensor_err: "Sensor permission is required to use the compass.",
             status_no_sensor: "No compass sensor found on this device. Qibla bearing (clockwise from north):",
-            status_saved_city: "Location permission denied; calculated for your saved city:",
             status_calibrate: "Low compass accuracy: wave your phone in a figure 8",
             btn_permission: "Enable Compass & Audio", btn_retry: "Retry Location",
             info_distance_title: "Distance to Kaaba:",
-            decl_title: "Magnetic declination correction",
-            decl_note: "A phone compass points to magnetic north, while the Qibla bearing is relative to true north. In Turkey the difference is about 5-7°; this value is added as an estimate (±1°) for your location. You can compare with a known Qibla direction (e.g. a mosque's mihrab) and fine-tune with +/−.",
-            decl_outside: "Your location is outside Turkey; declination was not calculated automatically. Adjust manually if needed.",
+            decl_note: "A phone compass points to magnetic north, while the Qibla bearing is calculated from true north. The difference (magnetic declination) is computed for your location with the NOAA/NCEI and BGS World Magnetic Model WMM2025 and added; the model is valid until 31 December 2029. Metal objects, magnets and electronic devices can affect the compass.",
+            decl_label: "Magnetic declination",
+            decl_none: "The declination model is not valid for this date; no correction is applied and direction confirmation is off.",
             footer_text: "Ayetin Vakti • Vibration & Audio Supported",
             dir_n: "N", dir_e: "E", dir_s: "S", dir_b: "W",
             dirs: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
@@ -334,17 +315,19 @@
             status_waiting: "جاري انتظار إذن الموقع والبوصلة...",
             status_flat: "اجعل هاتفك مستوياً",
             status_aligned: "أنت في اتجاه القبلة",
-            status_no_location: "تعذر الحصول على الموقع. يرجى السماح بالوصول للموقع.",
+            status_no_location: "تعذر الحصول على الموقع. لن تعمل البوصلة دون إذن الموقع.",
+            status_denied: "لم يُمنح إذن الموقع. لن تعمل البوصلة بدونه. فعّل الموقع من إعدادات المتصفح والجهاز ثم اضغط «إعادة محاولة الموقع».",
+            status_unavailable: "تعذر تحديد موقع الجهاز. فعّل خدمة الموقع في الجهاز ثم اضغط «إعادة محاولة الموقع».",
+            status_timeout: "انتهت مهلة تحديد الموقع. اضغط «إعادة محاولة الموقع».",
             status_no_support: "متصفحك لا يدعم خاصية تحديد الموقع.",
             status_sensor_err: "مطلوب إذن المستشعر لاستخدام البوصلة.",
             status_no_sensor: "لا يوجد مستشعر بوصلة في هذا الجهاز. زاوية القبلة (باتجاه عقارب الساعة من الشمال):",
-            status_saved_city: "لم يُمنح إذن الموقع؛ حُسبت القبلة للمدينة المحفوظة:",
             status_calibrate: "دقة البوصلة منخفضة: حرّك الهاتف على شكل الرقم 8",
             btn_permission: "تفعيل البوصلة والصوت", btn_retry: "إعادة محاولة الموقع",
             info_distance_title: "المسافة إلى الكعبة:",
-            decl_title: "تصحيح الانحراف المغناطيسي",
-            decl_note: "بوصلة الهاتف تشير إلى الشمال المغناطيسي بينما زاوية القبلة تُقاس من الشمال الحقيقي. في تركيا الفرق نحو 5-7°؛ تُضاف هذه القيمة تقديرياً (±1°) حسب موقعك. يمكنك المقارنة باتجاه قبلة معروف (كمحراب مسجد) وضبطها بـ +/−.",
-            decl_outside: "موقعك خارج تركيا؛ لم يُحسب الانحراف تلقائياً. اضبطه يدوياً عند الحاجة.",
+            decl_note: "بوصلة الهاتف تشير إلى الشمال المغناطيسي بينما تُحسب زاوية القبلة من الشمال الحقيقي. يُحسب الفرق (الانحراف المغناطيسي) لموقعك بنموذج المجال المغناطيسي العالمي WMM2025 الصادر عن NOAA/NCEI وBGS ويُضاف؛ والنموذج صالح حتى 31 ديسمبر 2029. الأجسام المعدنية والمغناطيس والأجهزة الإلكترونية قد تؤثر في البوصلة.",
+            decl_label: "الانحراف المغناطيسي",
+            decl_none: "نموذج الانحراف غير صالح لهذا التاريخ؛ لا يُطبَّق أي تصحيح وتأكيد الاتجاه متوقف.",
             footer_text: "آية الوقت • يدعم الاهتزاز والصوت",
             dir_n: "ش", dir_e: "ق", dir_s: "ج", dir_b: "غ",
             dirs: ['ش', 'ش ق', 'ق', 'ج ق', 'ج', 'ج غ', 'غ', 'ش غ']
@@ -370,11 +353,149 @@
         return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
     }
 
-    // Türkiye için YAKLAŞIK manyetik sapma (doğu +). WMM-2025'e göre İstanbul ≈ +6.5°, Antalya ≈ +5.5° (2026).
-    // Duyarlılık ≈ ±1°. Türkiye dışında null döner (otomatik düzeltme yapılmaz).
-    function approxDeclination(lat, lng) {
-        if (lat < 35.5 || lat > 42.5 || lng < 25.5 || lng > 45.0) return null;
-        return Math.min(7.5, Math.max(4.5, 5.7 + 0.2 * (lat - 37)));
+    // ---- Dünya Manyetik Modeli WMM2025: NOAA/NCEI + BGS katsayıları, NOAA'nın yayımladığı 12 resmî test değeriyle doğrulandı ----
+    const WMM2025 = { epoch: 2025.0, validUntil: 2030.0, coef: [
+            [1, 0, -29351.8, 0.0, 12.0, 0.0],
+            [1, 1, -1410.8, 4545.4, 9.7, -21.5],
+            [2, 0, -2556.6, 0.0, -11.6, 0.0],
+            [2, 1, 2951.1, -3133.6, -5.2, -27.7],
+            [2, 2, 1649.3, -815.1, -8.0, -12.1],
+            [3, 0, 1361.0, 0.0, -1.3, 0.0],
+            [3, 1, -2404.1, -56.6, -4.2, 4.0],
+            [3, 2, 1243.8, 237.5, 0.4, -0.3],
+            [3, 3, 453.6, -549.5, -15.6, -4.1],
+            [4, 0, 895.0, 0.0, -1.6, 0.0],
+            [4, 1, 799.5, 278.6, -2.4, -1.1],
+            [4, 2, 55.7, -133.9, -6.0, 4.1],
+            [4, 3, -281.1, 212.0, 5.6, 1.6],
+            [4, 4, 12.1, -375.6, -7.0, -4.4],
+            [5, 0, -233.2, 0.0, 0.6, 0.0],
+            [5, 1, 368.9, 45.4, 1.4, -0.5],
+            [5, 2, 187.2, 220.2, 0.0, 2.2],
+            [5, 3, -138.7, -122.9, 0.6, 0.4],
+            [5, 4, -142.0, 43.0, 2.2, 1.7],
+            [5, 5, 20.9, 106.1, 0.9, 1.9],
+            [6, 0, 64.4, 0.0, -0.2, 0.0],
+            [6, 1, 63.8, -18.4, -0.4, 0.3],
+            [6, 2, 76.9, 16.8, 0.9, -1.6],
+            [6, 3, -115.7, 48.8, 1.2, -0.4],
+            [6, 4, -40.9, -59.8, -0.9, 0.9],
+            [6, 5, 14.9, 10.9, 0.3, 0.7],
+            [6, 6, -60.7, 72.7, 0.9, 0.9],
+            [7, 0, 79.5, 0.0, -0.0, 0.0],
+            [7, 1, -77.0, -48.9, -0.1, 0.6],
+            [7, 2, -8.8, -14.4, -0.1, 0.5],
+            [7, 3, 59.3, -1.0, 0.5, -0.8],
+            [7, 4, 15.8, 23.4, -0.1, 0.0],
+            [7, 5, 2.5, -7.4, -0.8, -1.0],
+            [7, 6, -11.1, -25.1, -0.8, 0.6],
+            [7, 7, 14.2, -2.3, 0.8, -0.2],
+            [8, 0, 23.2, 0.0, -0.1, 0.0],
+            [8, 1, 10.8, 7.1, 0.2, -0.2],
+            [8, 2, -17.5, -12.6, 0.0, 0.5],
+            [8, 3, 2.0, 11.4, 0.5, -0.4],
+            [8, 4, -21.7, -9.7, -0.1, 0.4],
+            [8, 5, 16.9, 12.7, 0.3, -0.5],
+            [8, 6, 15.0, 0.7, 0.2, -0.6],
+            [8, 7, -16.8, -5.2, -0.0, 0.3],
+            [8, 8, 0.9, 3.9, 0.2, 0.2],
+            [9, 0, 4.6, 0.0, -0.0, 0.0],
+            [9, 1, 7.8, -24.8, -0.1, -0.3],
+            [9, 2, 3.0, 12.2, 0.1, 0.3],
+            [9, 3, -0.2, 8.3, 0.3, -0.3],
+            [9, 4, -2.5, -3.3, -0.3, 0.3],
+            [9, 5, -13.1, -5.2, 0.0, 0.2],
+            [9, 6, 2.4, 7.2, 0.3, -0.1],
+            [9, 7, 8.6, -0.6, -0.1, -0.2],
+            [9, 8, -8.7, 0.8, 0.1, 0.4],
+            [9, 9, -12.9, 10.0, -0.1, 0.1],
+            [10, 0, -1.3, 0.0, 0.1, 0.0],
+            [10, 1, -6.4, 3.3, 0.0, 0.0],
+            [10, 2, 0.2, 0.0, 0.1, -0.0],
+            [10, 3, 2.0, 2.4, 0.1, -0.2],
+            [10, 4, -1.0, 5.3, -0.0, 0.1],
+            [10, 5, -0.6, -9.1, -0.3, -0.1],
+            [10, 6, -0.9, 0.4, 0.0, 0.1],
+            [10, 7, 1.5, -4.2, -0.1, 0.0],
+            [10, 8, 0.9, -3.8, -0.1, -0.1],
+            [10, 9, -2.7, 0.9, -0.0, 0.2],
+            [10, 10, -3.9, -9.1, -0.0, -0.0],
+            [11, 0, 2.9, 0.0, 0.0, 0.0],
+            [11, 1, -1.5, 0.0, -0.0, -0.0],
+            [11, 2, -2.5, 2.9, 0.0, 0.1],
+            [11, 3, 2.4, -0.6, 0.0, -0.0],
+            [11, 4, -0.6, 0.2, 0.0, 0.1],
+            [11, 5, -0.1, 0.5, -0.1, -0.0],
+            [11, 6, -0.6, -0.3, 0.0, -0.0],
+            [11, 7, -0.1, -1.2, -0.0, 0.1],
+            [11, 8, 1.1, -1.7, -0.1, -0.0],
+            [11, 9, -1.0, -2.9, -0.1, 0.0],
+            [11, 10, -0.2, -1.8, -0.1, 0.0],
+            [11, 11, 2.6, -2.3, -0.1, 0.0],
+            [12, 0, -2.0, 0.0, 0.0, 0.0],
+            [12, 1, -0.2, -1.3, 0.0, -0.0],
+            [12, 2, 0.3, 0.7, -0.0, 0.0],
+            [12, 3, 1.2, 1.0, -0.0, -0.1],
+            [12, 4, -1.3, -1.4, -0.0, 0.1],
+            [12, 5, 0.6, -0.0, -0.0, -0.0],
+            [12, 6, 0.6, 0.6, 0.1, -0.0],
+            [12, 7, 0.5, -0.1, -0.0, -0.0],
+            [12, 8, -0.1, 0.8, 0.0, 0.0],
+            [12, 9, -0.4, 0.1, 0.0, -0.0],
+            [12, 10, -0.2, -1.0, -0.1, -0.0],
+            [12, 11, -1.3, 0.1, -0.0, 0.0],
+            [12, 12, -0.7, 0.2, -0.1, -0.1]
+        ] };
+    // WMM2025 (NOAA/NCEI + BGS) ile manyetik sapma (D), derece, doğu pozitif. Geçerlilik: 2025.0 – 2030.0 (31 Aralık 2029'a kadar).
+    function wmmField(latDeg, lonDeg, hKm, year) {
+        const rad = Math.PI / 180, A = 6378.137, F = 1 / 298.257223563, E2 = F * (2 - F), RE = 6371.2, N = 12;
+        const t = year - WMM2025.epoch;
+        const phi = latDeg * rad, lam = lonDeg * rad, sp = Math.sin(phi), cp = Math.cos(phi);
+        // jeodezik -> küresel
+        const rc = A / Math.sqrt(1 - E2 * sp * sp);
+        const p = (rc + hKm) * cp, z = (rc * (1 - E2) + hKm) * sp;
+        const r = Math.sqrt(p * p + z * z), phiS = Math.asin(z / r);
+        const ct = Math.sin(phiS), st = Math.cos(phiS);        // cos(kolatitüd), sin(kolatitüd)
+        // Schmidt yarı-normalize Legendre ve kolatitüd türevi
+        const P = [], dP = [];
+        for (let n = 0; n <= N; n++) { P.push(new Array(N + 1).fill(0)); dP.push(new Array(N + 1).fill(0)); }
+        P[0][0] = 1;
+        for (let n = 1; n <= N; n++) {
+            for (let m = 0; m <= n; m++) {
+                if (n === m) {
+                    if (n === 1) { P[1][1] = st; dP[1][1] = ct; }
+                    else { const k = Math.sqrt((2 * n - 1) / (2 * n)); P[n][n] = k * st * P[n - 1][n - 1]; dP[n][n] = k * (ct * P[n - 1][n - 1] + st * dP[n - 1][n - 1]); }
+                } else {
+                    const d = Math.sqrt(n * n - m * m), k2 = n - 1 >= m ? Math.sqrt((n - 1) * (n - 1) - m * m) : 0;
+                    const p2 = n - 2 >= m ? P[n - 2][m] : 0, dp2 = n - 2 >= m ? dP[n - 2][m] : 0;
+                    P[n][m] = ((2 * n - 1) * ct * P[n - 1][m] - k2 * p2) / d;
+                    dP[n][m] = ((2 * n - 1) * (ct * dP[n - 1][m] - st * P[n - 1][m]) - k2 * dp2) / d;
+                }
+            }
+        }
+        let br = 0, bt = 0, bl = 0;
+        for (const c of WMM2025.coef) {
+            const n = c[0], m = c[1], g = c[2] + t * c[4], h = c[3] + t * c[5];
+            const ar = Math.pow(RE / r, n + 2), cm = Math.cos(m * lam), sm = Math.sin(m * lam);
+            br += ar * (n + 1) * (g * cm + h * sm) * P[n][m];
+            bt += ar * (g * cm + h * sm) * dP[n][m];
+            bl += ar * m * (g * sm - h * cm) * P[n][m];
+        }
+        const xs = bt, ys = bl / st, zs = -br;                 // kuzey, doğu, aşağı (küresel)
+        const dphi = phiS - phi, X = xs * Math.cos(dphi) - zs * Math.sin(dphi), Y = ys, Z = xs * Math.sin(dphi) + zs * Math.cos(dphi);
+        const H = Math.sqrt(X * X + Y * Y);
+        return { X, Y, Z, H, F: Math.sqrt(H * H + Z * Z), I: Math.atan2(Z, H) / rad, D: Math.atan2(Y, X) / rad };
+    }
+    function decimalYear(ms) {
+        const d = new Date(ms), y = d.getUTCFullYear(), s = Date.UTC(y, 0, 1), e = Date.UTC(y + 1, 0, 1);
+        return y + (ms - s) / (e - s);
+    }
+    // Model süresi dışında null döner (düzeltme uygulanmaz).
+    function wmmDeclination(latDeg, lonDeg, ms) {
+        const yr = decimalYear(ms);
+        if (!(yr >= WMM2025.epoch && yr < WMM2025.validUntil)) return null;
+        const D = wmmField(latDeg, lonDeg, 0, yr).D;
+        return isFinite(D) ? D : null;
     }
 
     function angDiff(a, b) { let d = Math.abs(((a - b) % 360 + 360) % 360); return d > 180 ? 360 - d : d; }
@@ -396,9 +517,7 @@
     let qiblaBearing = null, declAuto = 0, declKnown = false;
     let hx = 0, hy = 1, haveHeading = false, accuracy = null, needsRender = false;
     let dialAngle = 0, ptrAngle = 0, isAligned = false, compassStarted = false, audioCtx = null, wakeLock = null;
-    let locSource = '-', locLat = null, locLng = null, sensorKind = 'yok', eventCount = 0, lastDiag = 0, staticQ = null;
-    let declOn = localStorage.getItem('qibla_decl_on') !== '0';
-    let declAdj = parseFloat(localStorage.getItem('qibla_decl_adj')) || 0;
+    let locSource = '-', locLat = null, locLng = null, sensorKind = 'yok', eventCount = 0, lastDiag = 0, staticQ = null, sensorTimer = null;
 
     // ===================== TEMA =====================
     function updateThemeButton() {
@@ -440,21 +559,6 @@
         try { if ('wakeLock' in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); } } catch (e) { /* desteklenmiyor */ }
     }
 
-    // ===================== SAPMA (DEKLİNASYON) =====================
-    function declTotal() { return declOn ? declAuto + declAdj : 0; }
-    function updateDeclUI() {
-        const v = declTotal();
-        document.getElementById('decl-value').textContent = (v >= 0 ? '+' : '') + v.toFixed(1) + '°' + (declKnown && declOn && declAdj === 0 ? ' (~)' : '');
-        const tg = document.getElementById('decl-toggle');
-        tg.classList.toggle('on', declOn); tg.textContent = declOn ? '✓' : '✕';
-    }
-    function toggleDecl() { declOn = !declOn; localStorage.setItem('qibla_decl_on', declOn ? '1' : '0'); updateDeclUI(); needsRender = true; }
-    function adjustDecl(step) {
-        declAdj = step === null ? 0 : Math.round((declAdj + step) * 10) / 10;
-        localStorage.setItem('qibla_decl_adj', String(declAdj));
-        updateDeclUI(); needsRender = true;
-    }
-
     // ===================== KONUM =====================
     function setStatus(text, aligned) {
         document.getElementById('status-text').textContent = text;
@@ -465,45 +569,64 @@
         locSource = source || 'GPS'; locLat = lat; locLng = lng;
         qiblaBearing = calculateQiblaAngle(lat, lng);
         const dist = calculateDistance(lat, lng, meccaLat, meccaLng);
-        const d = approxDeclination(lat, lng);
-        declKnown = d !== null; declAuto = declKnown ? d : 0;
         document.getElementById('qibla-angle-top').textContent = Math.round(qiblaBearing) + '°';
         document.getElementById('kaaba-distance').textContent = dist.toLocaleString() + ' km';
-        document.getElementById('decl-note').textContent = t.decl_note + (declKnown ? '' : ' ' + t.decl_outside);
-        updateDeclUI();
+        const d = wmmDeclination(lat, lng, Date.now());
+        declKnown = d !== null; declAuto = declKnown ? d : 0;
+        document.getElementById('decl-line').textContent = declKnown ? `${t.decl_label}: ${d >= 0 ? '+' : ''}${d.toFixed(1)}° (WMM2025)` : t.decl_none;
         document.getElementById('retry-btn').style.display = noteText ? 'block' : 'none';
-        setStatus(noteText || t.status_flat, false);
+        setStatus(noteText || (declKnown ? t.status_flat : t.decl_none), false);
         needsRender = true;
         setupCompass();
     }
 
-    // Konum izni yoksa kayıtlı şehrin koordinatlarını (Aladhan meta bilgisi) kullan
-    async function locationFromSavedCity() {
-        const saved = localStorage.getItem('user_city');
-        if (!saved) return false;
-        const map = { 'ç': 'c', 'ğ': 'g', 'ı': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u', 'Ç': 'C', 'Ğ': 'G', 'İ': 'I', 'Ö': 'O', 'Ş': 'S', 'Ü': 'U' };
-        const ascii = saved.replace(/[çğıöşüÇĞİÖŞÜ]/g, ch => map[ch]);
-        try {
-            const res = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=${encodeURIComponent(ascii)}&country=Turkey&method=13`);
-            if (!res.ok) return false;
-            const j = await res.json();
-            const lat = parseFloat(j.data.meta.latitude), lng = parseFloat(j.data.meta.longitude);
-            if (isNaN(lat) || isNaN(lng)) return false;
-            applyLocation(lat, lng, `${t.status_saved_city} ${saved}`, 'kayıtlı şehir: ' + saved);
-            return true;
-        } catch (e) { return false; }
+    // Konum izni/servisi yoksa pusula KİLİTLİ kalır: sensör dinlenmez, ok çizilmez, Kıble hesaplanmaz.
+    // (Kayıtlı şehre göre tahmin yapılmaz; konum olmadan gösterilen yön yanlış olabilir.)
+    function lockCompass(msg) {
+        window.removeEventListener('deviceorientationabsolute', handleOrientation, true);
+        window.removeEventListener('deviceorientation', handleOrientation, true);
+        clearTimeout(sensorTimer); sensorTimer = null;
+        if (wakeLock) { try { wakeLock.release(); } catch (e) { /* yok say */ } wakeLock = null; }
+        qiblaBearing = null; haveHeading = false; compassStarted = false; isAligned = false; needsRender = false;
+        locLat = null; locLng = null; declAuto = 0; declKnown = false;
+        document.getElementById('perm-btn').style.display = 'none';
+        document.getElementById('qibla-angle-top').textContent = '--°';
+        document.getElementById('current-angle').textContent = '--°';
+        document.getElementById('current-dir-code').textContent = '--';
+        document.getElementById('kaaba-distance').textContent = '-- km';
+        document.getElementById('decl-line').textContent = '--';
+        document.getElementById('compass-wrapper').classList.add('locked');
+        document.getElementById('retry-btn').style.display = 'block';
+        setStatus(msg, false);
     }
 
     function initLocation() {
-        if (!navigator.geolocation) {
-            locationFromSavedCity().then(ok => { if (!ok) setStatus(t.status_no_support, false); });
-            return;
-        }
+        if (!navigator.geolocation) { lockCompass(t.status_no_support); return; }
+        setStatus(t.status_waiting, false);
         navigator.geolocation.getCurrentPosition(
-            pos => applyLocation(pos.coords.latitude, pos.coords.longitude, '', 'GPS'),
-            () => { locationFromSavedCity().then(ok => { if (!ok) { setStatus(t.status_no_location, false); document.getElementById('retry-btn').style.display = 'block'; } }); },
-            { enableHighAccuracy: false, timeout: 15000, maximumAge: 600000 }
+            pos => {
+                document.getElementById('compass-wrapper').classList.remove('locked');
+                applyLocation(pos.coords.latitude, pos.coords.longitude, '', 'GPS');
+            },
+            err => {
+                const code = err && err.code;
+                lockCompass(code === 1 ? t.status_denied : code === 2 ? t.status_unavailable : code === 3 ? t.status_timeout : t.status_no_location);
+            },
+            { enableHighAccuracy: false, timeout: 15000, maximumAge: 0 }
         );
+    }
+
+    // İzin sonradan kapatılırsa pusula hemen kilitlenir; sonradan açılırsa yeniden denenir.
+    function watchLocationPermission() {
+        try {
+            if (!navigator.permissions || !navigator.permissions.query) return;
+            navigator.permissions.query({ name: 'geolocation' }).then(ps => {
+                ps.onchange = () => {
+                    if (ps.state === 'denied') lockCompass(t.status_denied);
+                    else if (ps.state === 'granted' && qiblaBearing === null) initLocation();
+                };
+            }).catch(() => { /* desteklenmiyor */ });
+        } catch (e) { /* desteklenmiyor */ }
     }
 
     // ===================== SENSÖR =====================
@@ -545,12 +668,14 @@
         window.addEventListener('deviceorientation', handleOrientation, true);
         keepAwake();
         // Birkaç saniyede veri gelmezse sensör yok demektir (ör. bilgisayar)
-        setTimeout(() => {
+        clearTimeout(sensorTimer);
+        sensorTimer = setTimeout(() => {
             if (!haveHeading && qiblaBearing !== null) setStatus(`${t.status_no_sensor} ${Math.round(qiblaBearing)}°`, false);
         }, 4000);
     }
 
     function requestCompassPermission() {
+        if (qiblaBearing === null) return;   // konum yoksa pusula açılmaz
         unlockAudio();
         DeviceOrientationEvent.requestPermission()
             .then(response => {
@@ -567,7 +692,7 @@
         needsRender = false;
 
         const magHeading = (Math.atan2(hx, hy) * 180 / Math.PI + 360) % 360;
-        const heading = ((magHeading + declTotal()) % 360 + 360) % 360;          // gerçek kuzeye göre yön
+        const heading = ((magHeading + declAuto) % 360 + 360) % 360;   // WMM2025 sapması eklenerek gerçek kuzeye göre yön
 
         document.getElementById('current-angle').textContent = Math.round(heading) + '°';
         document.getElementById('current-dir-code').textContent = t.dirs[Math.round(heading / 45) % 8];
@@ -582,6 +707,7 @@
 
         // DÜZELTME: eşik histerezisi (3° girişte, 6° çıkışta) — kenarda titreşip durmasın
         const diff = angDiff(heading, qiblaBearing);
+        if (!declKnown) { if (isAligned) isAligned = false; return; }   // model geçerli değilse yön onayı verilmez
         if (!isAligned && diff <= 3) {
             isAligned = true;
             setStatus('✨ ' + t.status_aligned + ' ✨', true);
@@ -619,10 +745,11 @@
         }
         document.getElementById('compass').insertAdjacentHTML('afterbegin', ticks);
 
-        updateDeclUI();
         document.addEventListener('pointerdown', unlockAudio, { once: true });
         document.addEventListener('visibilitychange', () => { if (!document.hidden && compassStarted) keepAwake(); });
         requestAnimationFrame(render);
+        try { localStorage.removeItem('qibla_decl_on'); localStorage.removeItem('qibla_decl_adj'); } catch (e) { /* yok say */ }
+        watchLocationPermission();
         initLocation();
     };
 </script>
