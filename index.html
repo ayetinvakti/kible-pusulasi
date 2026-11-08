@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+    <script src="https://ayetinvakti.github.io/finish.js?v=5"></script>
     <script src="https://ayetinvakti.github.io/menu.js" defer></script>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -208,10 +209,10 @@
 <div class="container">
     <div class="navbar">
         <div class="nav-group">
-            <a href="https://ayetinvakti.github.io/" class="home-btn" title="Ana Sayfa" aria-label="Ana Sayfa" data-i18n-title="home_title">←</a>
-            <button class="theme-icon-btn" data-drawer-toggle aria-label="Menü" aria-controls="avmDrawer" title="Menü">☰</button>
+            <a href="https://ayetinvakti.github.io/" class="home-btn fin-btn" title="Ana Sayfa" aria-label="Ana Sayfa" data-i18n-title="home_title">←</a>
+            <button class="theme-icon-btn fin-btn" data-drawer-toggle aria-label="Menü" aria-controls="avmDrawer" title="Menü">☰</button>
         </div>
-        <button class="theme-icon-btn" onclick="toggleTheme()" id="theme-btn" title="Tema Değiştir" aria-label="Tema Değiştir" data-i18n-title="theme_title">☀️</button>
+        <button class="theme-icon-btn fin-btn" onclick="toggleTheme()" id="theme-btn" title="Tema Değiştir" aria-label="Tema Değiştir" data-i18n-title="theme_title">☀️</button>
     </div>
     <h1 class="sr-only" data-i18n="page_title">Kıble Pusulası | Ayetin Vakti</h1>
 
@@ -245,14 +246,14 @@
         </div>
     </div>
 
-    <div class="status-button-card" id="status-card" aria-live="polite">
+    <div class="status-button-card fin-card" id="status-card" aria-live="polite">
         <span id="status-text" data-i18n="status_waiting">Konum ve pusula izni bekleniyor...</span>
     </div>
 
-    <button class="btn-permission" id="perm-btn" onclick="requestCompassPermission()" data-i18n="btn_permission">Pusulayı ve Sesi Etkinleştir</button>
-    <button class="btn-permission secondary" id="retry-btn" onclick="initLocation()" data-i18n="btn_retry">Konumu Yeniden Dene</button>
+    <button class="btn-permission fin-btn" id="perm-btn" onclick="requestCompassPermission()" data-i18n="btn_permission">Pusulayı ve Sesi Etkinleştir</button>
+    <button class="btn-permission secondary fin-btn" id="retry-btn" onclick="initLocation()" data-i18n="btn_retry">Konumu Yeniden Dene</button>
 
-    <div class="info-card">
+    <div class="info-card fin-card">
         <span style="font-size: 1.3rem;">🕋</span>
         <div>
             <span class="info-title" data-i18n="info_distance_title">Kâbe'ye Uzaklık:</span>
